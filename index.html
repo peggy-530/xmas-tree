@@ -1,0 +1,2669 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>粒子聖誕樹 ✦ 一起點亮的聖誕樹</title>
+<meta name="description" content="打開信封、許一個願，和大家一起點亮這棵粒子聖誕樹。">
+<meta property="og:title" content="粒子聖誕樹 ✦ 一起點亮的聖誕樹">
+<meta property="og:description" content="打開信封、許一個願，和大家一起點亮這棵粒子聖誕樹。">
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Noto+Serif+TC:wght@300;500&display=swap" rel="stylesheet">
+<style>
+  :root { --accent: 150,215,255; --accent2: 230,240,255; }
+  html, body { margin: 0; height: 100%; background: #02050c; overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  .text {
+    position: fixed; left: 0; right: 0; bottom: 90px; text-align: center;
+    pointer-events: none; opacity: 0; transition: opacity 2.5s ease;
+  }
+  .text.show { opacity: 1; }
+  .to { font-family: 'Noto Serif TC', serif; font-size: 13px; letter-spacing: .35em; color: rgba(var(--accent2), .75); margin-bottom: -2px; }
+  .title {
+    font-family: 'Great Vibes', cursive; font-size: clamp(34px, 7vw, 66px);
+    color: #eef8ff; text-shadow: 0 0 18px rgba(var(--accent), .7), 0 0 40px rgba(var(--accent), .35);
+  }
+  .msg {
+    font-family: 'Noto Serif TC', serif; font-weight: 300; letter-spacing: .2em;
+    font-size: clamp(14px, 2.6vw, 18px); color: #dceefa; margin: 4px 16px 0;
+    text-shadow: 0 0 10px rgba(var(--accent), .6); transition: opacity .8s; min-height: 1.5em;
+  }
+  .hint {
+    position: fixed; top: 12px; width: 100%; text-align: center;
+    font-family: 'Noto Serif TC', serif; font-size: 12px; letter-spacing: .15em;
+    color: rgba(220,240,255,.45); pointer-events: none; transition: opacity 1.2s; opacity: 0;
+  }
+  #info {
+    position: fixed; left: 14px; top: 38px; font-family: 'Noto Serif TC', serif; font-size: 12px; line-height: 1.9;
+    letter-spacing: .12em; color: rgba(210,235,255,.7); pointer-events: none; opacity: 0; transition: opacity 1.5s; max-width: 70vw;
+  }
+  #info b { color: #fff; font-weight: 500; }
+  #info .dim { color: rgba(210,235,255,.5); }
+  #bar {
+    position: fixed; left: 0; right: 0; bottom: 14px; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;
+    z-index: 5; opacity: 0; pointer-events: none; transition: opacity 1.5s; padding: 0 10px;
+  }
+  #bar.on { opacity: 1; pointer-events: auto; }
+  .pill {
+    font-family: 'Noto Serif TC', serif; font-size: 13px; letter-spacing: .12em;
+    color: #eef8ff; background: rgba(var(--accent), .08); border: 1px solid rgba(var(--accent2), .35);
+    border-radius: 999px; padding: 8px 14px; cursor: pointer; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  }
+  .pill.glow { box-shadow: 0 0 16px rgba(var(--accent), .6); border-color: rgba(var(--accent2), .8); }
+  .hidden { display: none !important; }
+  #music { position: fixed; right: 12px; top: 34px; z-index: 6; width: 36px; height: 36px; padding: 0; opacity: 0; transition: opacity 1.5s; }
+  #music.on { opacity: 1; }
+  #music.off { color: rgba(238,248,255,.35); text-decoration: line-through; }
+
+  /* 卡片式彈窗 */
+  .overlay {
+    position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 10;
+    background: radial-gradient(ellipse at center, rgba(10,25,50,.35), rgba(2,5,12,.78));
+    transition: opacity .9s;
+  }
+  .overlay.hide { opacity: 0; pointer-events: none; }
+  .card {
+    width: min(86vw, 380px); max-height: 82vh; overflow: auto; padding: 28px 24px 20px; border-radius: 22px; text-align: center; box-sizing: border-box;
+    background: linear-gradient(160deg, rgba(var(--accent2), .14), rgba(var(--accent), .05));
+    border: 1px solid rgba(var(--accent2), .3); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 0 60px rgba(var(--accent), .15), inset 0 0 30px rgba(var(--accent2), .05);
+  }
+  .t1 { font-family: 'Great Vibes', cursive; font-size: 40px; color: #eef8ff; text-shadow: 0 0 16px rgba(var(--accent), .7); }
+  .t2 { font-family: 'Noto Serif TC', serif; color: #d6eaf7; letter-spacing: .18em; font-size: 15px; margin: 6px 0 16px; font-weight: 300; }
+  .capsule {
+    font-family: 'Noto Serif TC', serif; font-size: 13px; line-height: 1.8; letter-spacing: .08em; color: #f2f8ff; text-align: left;
+    background: rgba(var(--accent), .08); border: 1px dashed rgba(var(--accent2), .35); border-radius: 12px; padding: 10px 12px; margin-bottom: 14px;
+  }
+  .capsule .q { color: #fff; font-weight: 500; }
+  textarea, input[type=text] {
+    width: 100%; box-sizing: border-box; resize: none; border-radius: 14px; padding: 12px 14px;
+    background: rgba(5,15,30,.45); border: 1px solid rgba(var(--accent2), .25); color: #eef8ff; outline: none;
+    font-family: 'Noto Serif TC', serif; font-size: 15px; letter-spacing: .06em; line-height: 1.6;
+  }
+  textarea { height: 88px; }
+  textarea::placeholder, input::placeholder { color: rgba(210,230,245,.4); }
+  textarea:focus, input:focus { border-color: rgba(var(--accent2), .6); box-shadow: 0 0 14px rgba(var(--accent), .25); }
+  .btns { display: flex; gap: 10px; margin-top: 14px; }
+  .btns button {
+    flex: 1; padding: 11px 0; border-radius: 999px; cursor: pointer; font-family: 'Noto Serif TC', serif;
+    font-size: 14px; letter-spacing: .18em; transition: transform .15s;
+  }
+  .btns button:active { transform: scale(.97); }
+  .ghost { background: transparent; color: rgba(220,238,255,.8); border: 1px solid rgba(var(--accent2), .28); }
+  .main { background: linear-gradient(135deg, rgb(var(--accent2)), rgb(var(--accent)) 60%, rgb(var(--accent2))); color: #071a2e; border: none; font-weight: 500; box-shadow: 0 0 18px rgba(var(--accent), .45); }
+  .note { font-family: 'Noto Serif TC', serif; font-size: 11px; letter-spacing: .12em; color: rgba(210,230,245,.5); margin-top: 12px; }
+
+  /* 信封 */
+  #envelope { flex-direction: column; cursor: pointer; }
+  .env { position: relative; width: min(78vw, 320px); aspect-ratio: 3 / 2; perspective: 900px; animation: float 3.5s ease-in-out infinite; }
+  @keyframes float { 50% { transform: translateY(-8px); } }
+  .env .body {
+    position: absolute; inset: 0; border-radius: 10px;
+    background: linear-gradient(150deg, rgba(var(--accent2), .95), rgba(var(--accent), .75));
+    box-shadow: 0 0 50px rgba(var(--accent), .35), inset 0 0 0 1px rgba(255,255,255,.5);
+  }
+  .env .pocket {
+    position: absolute; inset: 0; border-radius: 10px;
+    background: linear-gradient(20deg, rgba(var(--accent), .9), rgba(var(--accent2), .85));
+    clip-path: polygon(0 100%, 0 38%, 50% 72%, 100% 38%, 100% 100%);
+  }
+  .env .flap {
+    position: absolute; left: 0; right: 0; top: 0; height: 62%; transform-origin: top; transition: transform 1s ease;
+    background: linear-gradient(180deg, rgba(var(--accent2), 1), rgba(var(--accent), .9));
+    clip-path: polygon(0 0, 100% 0, 50% 100%); z-index: 2;
+  }
+  .env.open .flap { transform: rotateX(180deg); z-index: 0; }
+  .env .seal {
+    position: absolute; left: 50%; top: 62%; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; z-index: 3;
+    background: radial-gradient(circle at 35% 35%, #fff, rgb(var(--accent)) 70%); box-shadow: 0 0 18px rgba(var(--accent), .8);
+    display: flex; align-items: center; justify-content: center; color: #0b2340; font-size: 20px; transition: opacity .5s;
+  }
+  .env.open .seal { opacity: 0; }
+  .env .addr { position: absolute; left: 0; right: 0; bottom: 14%; text-align: center; z-index: 3; font-family: 'Noto Serif TC', serif; color: #0b2340; letter-spacing: .25em; font-size: 15px; transition: opacity .5s; }
+  .env.open .addr { opacity: 0; }
+  .tap { margin-top: 26px; font-family: 'Noto Serif TC', serif; font-size: 13px; letter-spacing: .35em; color: rgba(230,245,255,.65); animation: blink 2s ease-in-out infinite; }
+  @keyframes blink { 50% { opacity: .3; } }
+
+  /* 信 */
+  .letter { text-align: left; }
+  .letter .to2 { font-family: 'Noto Serif TC', serif; color: #fff; letter-spacing: .2em; font-size: 15px; margin-bottom: 14px; }
+  .letter .body2 { font-family: 'Noto Serif TC', serif; font-weight: 300; color: #eaf5ff; font-size: 15px; line-height: 2; letter-spacing: .08em; white-space: pre-line; }
+  .letter .from2 { font-family: 'Noto Serif TC', serif; color: #fff; letter-spacing: .2em; font-size: 14px; margin-top: 18px; text-align: right; }
+
+  .tabs { display: flex; gap: 6px; margin: 4px 0 14px; padding: 4px; border-radius: 999px; background: rgba(5,15,30,.35); }
+  .tab { flex: 1; border: none; background: transparent; color: rgba(220,238,255,.65); padding: 8px 0; border-radius: 999px; cursor: pointer;
+    font-family: 'Noto Serif TC', serif; font-size: 13px; letter-spacing: .12em; }
+  .tab.on { background: rgba(var(--accent), .25); color: #fff; }
+  .stack > * + * { margin-top: 10px; }
+  .sub { font-family: 'Noto Serif TC', serif; color: #d6eaf7; letter-spacing: .12em; font-size: 13px; line-height: 1.8; margin-bottom: 12px; }
+  .note.ok { color: rgba(var(--accent2), .95); }
+  .note.err { color: #ffb4c4; }
+  #toast {
+    position: fixed; left: 50%; top: 40%; transform: translate(-50%, -50%); z-index: 20; pointer-events: none;
+    font-family: 'Noto Serif TC', serif; font-size: 14px; letter-spacing: .12em; color: #fff; text-align: center; line-height: 1.8;
+    background: rgba(5,15,30,.55); border: 1px solid rgba(var(--accent2), .3); border-radius: 16px; padding: 12px 18px; max-width: 80vw;
+    opacity: 0; transition: opacity .8s; backdrop-filter: blur(8px); width: max-content;
+  }
+  #toast.on { opacity: 1; }
+  #big {
+    position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 8;
+    font-family: 'Great Vibes', cursive; font-size: clamp(48px, 12vw, 120px); color: #fff; opacity: 0; transition: opacity 2s;
+    text-shadow: 0 0 30px rgba(var(--accent), 1), 0 0 80px rgba(var(--accent), .6);
+  }
+  #big.on { opacity: 1; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hint" id="hint"></div>
+<div id="info"></div>
+<button class="pill" id="music" title="音樂">♪</button>
+<div class="text" id="text">
+  <div class="to" id="toLine"></div>
+  <div class="title">Merry Christmas</div>
+  <div class="msg" id="msg"></div>
+</div>
+<div id="bar">
+  <button class="pill" id="btnWish">✦ 許個願</button>
+  <button class="pill" id="btnBless">☁ 留一句祝福</button>
+  <button class="pill" id="btnMore">✦ 更多</button>
+  <button class="pill hidden" id="btnSecret">🔐 密語祝福</button>
+  <button class="pill hidden" id="btnLetter">✉ 星星裡的信</button>
+</div>
+<div id="toast"></div>
+<div id="big">Merry Christmas</div>
+
+<!-- 信封 -->
+<div class="overlay" id="envelope">
+  <div class="env" id="env">
+    <div class="body"></div>
+    <div class="pocket"></div>
+    <div class="flap"></div>
+    <div class="seal">✦</div>
+    <div class="addr" id="envTo"></div>
+  </div>
+  <div class="tap">輕觸打開</div>
+</div>
+
+<!-- 許願卡 -->
+<div class="overlay hide" id="wish">
+  <div class="card">
+    <div class="t1">Make a Wish</div>
+    <div class="t2" id="wishSub">在樹被點亮之前，許一個願吧</div>
+    <div class="capsule hidden" id="capsule"></div>
+    <textarea id="wishText" maxlength="80" placeholder="我希望……（也可以不寫）"></textarea>
+    <div class="btns">
+      <button class="ghost" id="skip">先不許</button>
+      <button class="main" id="go">✦ 許願</button>
+    </div>
+    <div class="note" id="note">願望會封進時光膠囊，只有你自己看得到<br>明年聖誕節回來，就能打開它</div>
+  </div>
+</div>
+
+<!-- 祝福卡 -->
+<div class="overlay hide" id="bless">
+  <div class="card">
+    <div class="t1">Blessing</div>
+    <div class="t2">留一句祝福，讓它飄上這片夜空</div>
+    <input type="text" id="blessText" maxlength="30" placeholder="例如：願大家明年都平安快樂">
+    <div class="btns">
+      <button class="ghost" id="blessCancel">算了</button>
+      <button class="main" id="blessGo">☁ 送出</button>
+    </div>
+    <div class="note">祝福是公開的，所有打開這棵樹的人都看得到</div>
+  </div>
+</div>
+
+<!-- 密語祝福 -->
+<div class="overlay hide" id="secret">
+  <div class="card">
+    <div class="t1">Secret Wishes</div>
+    <div class="tabs"><button class="tab on" id="tabRead">輸入密語</button><button class="tab" id="tabWrite">寫一封給某人</button></div>
+    <div id="paneRead" class="stack">
+      <div class="sub">有人偷偷給了你一句密語嗎？<br>輸入它，打開只屬於你的祝福</div>
+      <input type="text" id="sKey" maxlength="40" placeholder="輸入密語" autocomplete="off">
+      <div class="btns"><button class="ghost sClose">關閉</button><button class="main" id="sOpen">打開祝福</button></div>
+      <div class="note" id="sMsg1"></div>
+    </div>
+    <div id="paneWrite" class="stack hidden">
+      <div class="sub">寫一封祝福，設一個密語，<br>再偷偷把密語告訴那個人</div>
+      <input type="text" id="wTo" maxlength="20" placeholder="寫給誰（例如：小美）">
+      <textarea id="wText" maxlength="300" placeholder="想對他說的話……" style="height:120px"></textarea>
+      <input type="text" id="wFrom" maxlength="20" placeholder="你的署名">
+      <div class="sub" style="margin:4px 0 0">對方打開時會看到：</div>
+      <div class="tabs" style="margin:0"><button class="tab fx on" data-fx="heart">♥ 愛心</button><button class="tab fx" data-fx="star">✦ 星星</button><button class="tab fx" data-fx="dream">☁ 童話</button></div>
+      <input type="text" id="wKey" maxlength="40" placeholder="設定密語（至少 4 個字，別太好猜）" autocomplete="off">
+      <div class="btns"><button class="ghost sClose">關閉</button><button class="main" id="sSave">封存祝福</button></div>
+      <div class="note" id="sMsg2">祝福會用密語加密，只有知道密語的人才打得開</div>
+    </div>
+  </div>
+</div>
+
+<!-- 星星裡的信 -->
+<div class="overlay hide" id="letter">
+  <div class="card letter">
+    <div class="to2" id="lTo"></div>
+    <div class="body2" id="lBody"></div>
+    <div class="from2" id="lFrom"></div>
+    <div class="btns"><button class="ghost" id="lClose">收起來</button></div>
+    <div class="note hidden" id="lPreview">（預覽：大家還沒點滿，只有你看得到這封信）</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+/* =====================================================================
+   把網頁原本用的 window.claude.use('db' | 'user' | 'room' | 'downloads')
+   換成 Supabase。訪客不用註冊：瀏覽器自己產生一把隨機鑰匙。
+   ===================================================================== */
+(() => {
+const SUPABASE_URL = 'https://veuizjjgkgslngovqbqs.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_450KWzLiHSVGMps0GCU6lw_lwqWEXhx';
+
+// ---------- 這個瀏覽器的身分 ----------
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+let token = lsGet('xmas-token');
+if (!token || token.length < 32) {
+  token = [...crypto.getRandomValues(new Uint8Array(32))].map(b => b.toString(16).padStart(2, '0')).join('');
+  lsSet('xmas-token', token);
+}
+const tabKey = Math.random().toString(36).slice(2, 12);
+const uidP = crypto.subtle.digest('SHA-256', new TextEncoder().encode(token))
+  .then(h => [...new Uint8Array(h)].map(b => b.toString(16).padStart(2, '0')).join(''));
+let adminPw = lsGet('xmas-admin') || '';
+
+let sb = null;
+const sbP = new Promise(resolve => {
+  const tryInit = (n = 0) => {
+    if (window.supabase && window.supabase.createClient) {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+      resolve(sb);
+    } else if (n < 100) setTimeout(() => tryInit(n + 1), 100);
+    else resolve(null);
+  };
+  tryInit();
+});
+
+// ---------- 小工具 ----------
+const isPrivate = p => p.startsWith('data/users/');
+const colOf = p => isPrivate(p) ? p.split('/').slice(0, 3).join('/') : p.split('/')[0];
+const snapOf = (path, data) => ({ id: path.split('/').pop(), exists: data !== undefined, data: () => data, metadata: { fromCache: false, hasPendingWrites: false } });
+const err = (e) => ({ code: /forbidden|bad token/.test(String(e && e.message)) ? 'invalid_argument' : 'unavailable', message: String(e && e.message || e) });
+
+async function fetchCol(col, filter) {
+  const s = await sbP; const uid = await uidP;
+  if (isPrivate(col)) {
+    const { data, error } = await s.rpc('xmas_private', { token });
+    if (error) throw error;
+    return (data || []).map(r => ({ path: r.path, data: r.data }));
+  }
+  let q = s.from('xmas_docs').select('path,data').eq('col', col).order('updated_at', { ascending: false }).limit(400);
+  if (filter && filter.f === 'keys' && filter.op === 'array-contains') q = q.filter('data->keys', 'cs', JSON.stringify([filter.v]));
+  else if (filter && filter.op === '==') q = q.filter('data->>' + filter.f, 'eq', String(filter.v));
+  const { data, error } = await q;
+  if (error) throw error;
+  return data || [];
+}
+async function fetchDoc(path) {
+  if (isPrivate(path)) { const rows = await fetchCol(colOf(path)); const r = rows.find(x => x.path === path); return r ? r.data : undefined; }
+  const s = await sbP;
+  const { data, error } = await s.from('xmas_docs').select('data').eq('path', path).maybeSingle();
+  if (error) throw error;
+  return data ? data.data : undefined;
+}
+
+// ---------- 即時更新 ----------
+const colListeners = new Map();   // col → Set(fn)
+const docListeners = new Map();   // path → Set(fn)
+const pending = new Map();
+function poke(col, path) {
+  const run = (key, set) => { if (!set) return; clearTimeout(pending.get(key)); pending.set(key, setTimeout(() => set.forEach(fn => fn()), 250)); };
+  run('c:' + col, colListeners.get(col));
+  if (path) run('d:' + path, docListeners.get(path));
+}
+let rtStarted = false;
+async function startRealtime() {
+  if (rtStarted) return; rtStarted = true;
+  const s = await sbP; if (!s) return;
+  s.channel('xmas-docs').on('postgres_changes', { event: '*', schema: 'public', table: 'xmas_docs' }, payload => {
+    const r = payload.new && payload.new.path ? payload.new : payload.old || {};
+    if (r.path) poke(r.col || colOf(r.path), r.path);
+  }).subscribe();
+  // 保險：每 30 秒重新整理一次（即時連線斷掉時也不會停）
+  setInterval(() => { colListeners.forEach((set, col) => poke(col)); docListeners.forEach((set, path) => poke(colOf(path), path)); }, 30000);
+}
+
+function docRef(path) {
+  return {
+    id: path.split('/').pop(), path,
+    async get() { return snapOf(path, await fetchDoc(path)); },
+    async set(d) {
+      const s = await sbP;
+      const { error } = await s.rpc('xmas_set', { token, p: path, d });
+      if (error) throw err(error);
+      poke(colOf(path), path);
+    },
+    async update(d) { const cur = await fetchDoc(path); if (!cur) throw { code: 'invalid_argument', message: 'missing' }; return this.set({ ...cur, ...d }); },
+    async delete() {
+      const s = await sbP;
+      const { error } = await s.rpc('xmas_delete', { token, p: path });
+      if (error) throw err(error);
+      poke(colOf(path), path);
+    },
+    onSnapshot(next, onErr) {
+      let last = '__';
+      const load = async () => {
+        try { const d = await fetchDoc(path); const js = JSON.stringify(d); if (js !== last) { last = js; next(snapOf(path, d)); } }
+        catch (e) { console.log('doc', path, e); }
+      };
+      if (!docListeners.has(path)) docListeners.set(path, new Set());
+      docListeners.get(path).add(load); startRealtime(); load();
+      return () => docListeners.get(path).delete(load);
+    },
+    collection(sub) { return colRef(path + '/' + sub); }
+  };
+}
+function colRef(col, filter) {
+  return {
+    path: col,
+    where(f, op, v) { return colRef(col, { f, op, v }); },
+    orderBy() { return this; }, limit() { return this; },
+    doc(id) { return docRef(col + '/' + (id || Math.random().toString(36).slice(2))); },
+    async add(d) { const r = this.doc(); await r.set(d); return r; },
+    async get() {
+      const rows = await fetchCol(col, filter);
+      const docs = rows.map(r => snapOf(r.path, r.data));
+      return { docs, size: docs.length, empty: !docs.length, docChanges: () => docs.map(d => ({ type: 'added', doc: d })), metadata: {} };
+    },
+    onSnapshot(next, onErr) {
+      let seen = new Map(), first = true;
+      const load = async () => {
+        try {
+          const rows = await fetchCol(col, filter);
+          const cur = new Map(rows.map(r => [r.path, JSON.stringify(r.data)]));
+          const data = new Map(rows.map(r => [r.path, r.data]));
+          const changes = [];
+          for (const [p, js] of cur) {
+            if (!seen.has(p)) changes.push({ type: 'added', doc: snapOf(p, data.get(p)) });
+            else if (seen.get(p) !== js) changes.push({ type: 'modified', doc: snapOf(p, data.get(p)) });
+          }
+          for (const [p, js] of seen) if (!cur.has(p)) changes.push({ type: 'removed', doc: snapOf(p, JSON.parse(js)) });
+          seen = cur;
+          if (changes.length || first) {
+            first = false;
+            const docs = [...cur.keys()].map(p => snapOf(p, data.get(p)));
+            next({ docs, size: docs.length, empty: !docs.length, docChanges: () => changes, metadata: { fromCache: false } });
+          }
+        } catch (e) { console.log('col', col, e); }
+      };
+      if (!colListeners.has(col)) colListeners.set(col, new Set());
+      colListeners.get(col).add(load); startRealtime(); load();
+      return () => colListeners.get(col).delete(load);
+    }
+  };
+}
+const db = { doc: docRef, collection: p => colRef(p) };
+
+// ---------- 身分 ----------
+const user = {
+  id: () => uidP,
+  me: async () => ({ id: await uidP }),
+  can: async () => true,
+  canEdit: async () => !!adminPw,
+  isOwner: async () => !!adminPw,
+  profiles: async () => ({})
+};
+
+// ---------- 同時在線、鈴鐺 ----------
+let roomObj = null;
+async function makeRoom() {
+  const s = await sbP; if (!s) return null;
+  const uid = await uidP;
+  const ch = s.channel('xmas-room', { config: { presence: { key: tabKey }, broadcast: { self: false } } });
+  let state = {}, ready = false;
+  const peerFns = new Set(), topicFns = new Map();
+  const buildPeers = () => Object.entries(ch.presenceState()).map(([key, metas]) => {
+    const m = (metas && metas[0]) || {};
+    return { peer: key, by: m.by || null, isMe: m.by === uid, sameTab: key === tabKey, kind: 'viewer', guest: false, presence: m, updatedAt: Date.now() };
+  });
+  ch.on('presence', { event: 'sync' }, () => { const peers = buildPeers(); peerFns.forEach(fn => fn({ peers, joined: [], left: [], updated: [] })); });
+  ch.on('broadcast', { event: '*' }, ({ event, payload }) => {
+    const set = topicFns.get(event); if (set) set.forEach(fn => fn({ topic: event, data: payload, isMe: false, sameTab: false, kind: 'viewer', peer: '', by: null, guest: false }));
+  });
+  ch.subscribe(st => { if (st === 'SUBSCRIBED') { ready = true; ch.track({ ...state, by: uid }); } });
+  return {
+    presence: async patch => { state = { ...state, ...patch }; if (ready) await ch.track({ ...state, by: uid }); },
+    onPeers: fn => { peerFns.add(fn); return () => peerFns.delete(fn); },
+    peers: () => buildPeers(),
+    on: (topic, fn) => { if (!topicFns.has(topic)) topicFns.set(topic, new Set()); topicFns.get(topic).add(fn); return () => topicFns.get(topic).delete(fn); },
+    emit: async (topic, data) => { if (ready) await ch.send({ type: 'broadcast', event: topic, payload: data || {} }); },
+    connected: () => ready
+  };
+}
+
+// ---------- 下載 ----------
+const downloads = {
+  save: async ({ filename, data }) => {
+    const url = URL.createObjectURL(data instanceof Blob ? data : new Blob([data]));
+    const a = document.createElement('a'); a.href = url; a.download = filename || 'download';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+};
+
+window.claude = {
+  use: async name => {
+    if (name === 'db') return (await sbP) ? db : null;
+    if (name === 'user') return user;
+    if (name === 'room') { if (!roomObj) roomObj = makeRoom(); return roomObj; }
+    if (name === 'downloads') return downloads;
+    return null;
+  }
+};
+
+// ---------- 管理員（網址後面加 #admin） ----------
+window.xmasIsAdmin = () => !!adminPw;
+window.xmasAdminDelete = async path => {
+  const s = await sbP;
+  const { error } = await s.rpc('xmas_admin_delete', { pw: adminPw, p: path });
+  if (error) throw error;
+  poke(colOf(path), path);
+};
+async function adminLogin() {
+  if (location.hash !== '#admin') return;
+  history.replaceState(null, '', location.pathname + location.search);
+  if (adminPw) { if (confirm('要登出管理模式嗎？')) { lsSet('xmas-admin', ''); location.reload(); } return; }
+  const pw = prompt('請輸入管理密碼');
+  if (!pw) return;
+  const s = await sbP;
+  const { data, error } = await s.rpc('xmas_admin_check', { pw });
+  if (!error && data === true) { lsSet('xmas-admin', pw); alert('已進入管理模式：你可以移除任何人放上去的東西。'); location.reload(); }
+  else alert('密碼不對');
+}
+window.addEventListener('hashchange', adminLogin);
+adminLogin();
+})();
+
+</script>
+<script>
+/* =====================================================================
+   網頁上的文字（都可以改）
+   ===================================================================== */
+const G = {
+  to: '打開這封信的你',          // 信封和畫面上的「To.」
+  from: '一棵許願樹',            // 星星裡的信的署名
+  palette: 'ice',
+  msg: {
+    tree:  '不管你是誰，願你今年冬天被好好對待',
+    heart: '願你被愛，也勇敢去愛 ♥',
+    star:  '你也是某個人生命裡，最亮的那顆星 ✦',
+    dream: '歡迎來到童話，在這裡什麼都可以實現'
+  },
+  // 大家一起點滿 48 個願望時，星星裡打開的信
+  letter: '謝謝每一個打開這棵樹、停下來許願的人。\n有些人我們很熟，有些人我們不認識，\n卻一起點亮了同一棵樹。\n\n願你的願望，都在不遠的地方等你。\n聖誕快樂。'
+};
+const UNLOCK_AT = 48;
+/* ===================================================================== */
+
+const PALETTES = {
+  ice:       { tree: ['150,220,255','110,190,250','190,235,255','215,225,240','235,245,255'], rib: ['230,240,255','140,215,255'], orn: ['160,230,255','255,255,255','190,200,255','140,255,240','210,235,255'], accent: '150,215,255', accent2: '230,242,255', bg: ['#07162a','#02050c'], ring: '140,210,255' },
+  champagne: { tree: ['200,215,235','230,238,250','150,210,250','255,228,175','215,225,240'], rib: ['255,220,150','235,240,255'], orn: ['255,215,140','255,255,255','255,235,190','180,220,255','255,200,120'], accent: '240,210,150', accent2: '250,240,220', bg: ['#141824','#04050a'], ring: '240,210,150' },
+  lilac:     { tree: ['140,235,230','170,215,255','200,190,255','225,235,250','180,245,240'], rib: ['205,180,255','150,240,230'], orn: ['210,180,255','150,250,235','255,255,255','255,200,240','180,210,255'], accent: '190,175,255', accent2: '235,230,255', bg: ['#130f2a','#04030c'], ring: '190,175,255' },
+  rose:      { tree: ['150,220,255','190,235,255','225,235,250','255,195,220','170,225,255'], rib: ['255,170,205','230,240,255'], orn: ['255,170,205','255,255,255','160,230,255','255,210,230','220,200,255'], accent: '255,175,210', accent2: '255,232,242', bg: ['#1a0f22','#05030a'], ring: '255,175,210' }
+};
+const PAL = PALETTES[G.palette];
+document.documentElement.style.setProperty('--accent', PAL.accent);
+document.documentElement.style.setProperty('--accent2', PAL.accent2);
+
+const MODES = ['tree', 'heart', 'star', 'dream'];
+const MODE_NAMES = { tree: '聖誕樹', heart: '愛心', star: '星星', dream: '童話' };
+
+document.getElementById('envTo').textContent = 'To. ' + G.to;
+document.getElementById('toLine').textContent = 'To. ' + G.to;
+document.getElementById('hint').textContent = '點一下：' + MODES.slice(1).map(m => MODE_NAMES[m]).join(' → ') + ' → 聖誕樹 ✦ 拖曳：轉動';
+
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+let W, H, DPR, S, CX, CY;
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight;
+  cv.width = W * DPR; cv.height = H * DPR;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  // 先量好下方按鈕列和文字佔多高，剩下的空間才給樹，避免疊在一起
+  const barEl = document.getElementById('bar'), txEl = document.getElementById('text');
+  const barH = barEl ? barEl.offsetHeight : 50;
+  const textBottom = 14 + barH + 16;
+  if (txEl) txEl.style.bottom = textBottom + 'px';
+  const textTop = H - textBottom - (txEl ? txEl.offsetHeight : 110);
+  const top = W < 600 ? 122 : 72;
+  const avail = textTop - 14 - top;
+  S = Math.max(70, Math.min(W * 0.46, avail / 2.62));
+  CX = W / 2; CY = top + 1.12 * S + Math.max(0, (avail - 2.62 * S) / 2);
+}
+addEventListener('resize', resize); resize();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(resize);
+
+const rand = (a, b) => a + Math.random() * (b - a);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+const spriteCache = {};
+function sprite(rgb) {
+  if (spriteCache[rgb]) return spriteCache[rgb];
+  const s = 64, c = document.createElement('canvas'); c.width = c.height = s;
+  const g = c.getContext('2d');
+  const gr = g.createRadialGradient(s/2, s/2, 0, s/2, s/2, s/2);
+  gr.addColorStop(0, 'rgba(255,255,255,1)');
+  gr.addColorStop(0.12, `rgba(${rgb},0.95)`);
+  gr.addColorStop(0.4, `rgba(${rgb},0.18)`);
+  gr.addColorStop(1, `rgba(${rgb},0)`);
+  g.fillStyle = gr; g.fillRect(0, 0, s, s);
+  return spriteCache[rgb] = c;
+}
+
+// ---------- 粒子 ----------
+const DREAM = ['255,200,240', '200,220,255', '255,240,205', '210,255,240', '230,205,255'];
+const SHAPE_COLS = { heart: ['255,170,205', '255,170,205', '255,170,205', '240,240,255'], star: ['255,230,170', '235,220,255', '255,245,210', '200,190,255'] };
+const N = innerWidth < 600 ? 2300 : 3800;
+const P = [];
+
+function inStar(x, y) {            // 五角星內部判斷（尖端朝上）
+  const pts = [];
+  for (let i = 0; i < 10; i++) { const r = i % 2 ? 0.42 : 1, a = -Math.PI / 2 + i * Math.PI / 5; pts.push([Math.cos(a) * r, Math.sin(a) * r]); }
+  let inside = false;
+  for (let i = 0, j = 9; i < 10; j = i++) {
+    const [xi, yi] = pts[i], [xj, yj] = pts[j];
+    if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+
+for (let i = 0; i < N; i++) {
+  let tx, tz, col;
+  const h = Math.pow(Math.random(), 0.8);
+  const R = (1 - h) * 0.95;
+  if (i % 3 === 0) {
+    const a = h * Math.PI * 14 + (i % 2) * Math.PI;
+    const j = rand(-0.03, 0.03);
+    tx = Math.cos(a) * (R + j); tz = Math.sin(a) * (R + j);
+    col = PAL.rib[i % 2];
+  } else {
+    const a = Math.random() * Math.PI * 2;
+    const r = R * Math.sqrt(Math.random()) * rand(0.85, 1.05);
+    tx = Math.cos(a) * r; tz = Math.sin(a) * r;
+    col = PAL.tree[Math.random() * PAL.tree.length | 0];
+  }
+  const ty = 1.05 - h * 2.1;
+
+  const T = { tree: [tx, ty, tz] };
+  let qx, qy;
+  do { qx = rand(-1.2, 1.2); qy = rand(-1.1, 1.3); } while (Math.pow(qx*qx + qy*qy - 1, 3) - qx*qx*qy*qy*qy > 0);
+  T.heart = [qx * 0.85, -qy * 0.85 + 0.05, rand(-1, 1) * 0.28];
+  do { qx = rand(-1, 1); qy = rand(-1, 0.85); } while (!inStar(qx, qy));
+  T.star = [qx * 1.05, qy * 1.05 + 0.08, rand(-1, 1) * 0.22];
+  const u = Math.random() * 2 - 1, th = Math.random() * Math.PI * 2, sr = rand(1.4, 3);
+  T.scatter = [Math.sqrt(1 - u*u) * Math.cos(th) * sr, u * sr * 0.75, Math.sqrt(1 - u*u) * Math.sin(th) * sr];
+
+  P.push({
+    T, da: Math.random() * Math.PI * 2, dr: rand(0.25, 2.3), dy: Math.random() * 3.4, rise: rand(0.04, 0.14),
+    x: T.scatter[0], y: T.scatter[1], z: T.scatter[2],
+    col, hcol: SHAPE_COLS.heart[i % 4], stcol: SHAPE_COLS.star[i % 4], dcol: DREAM[i % DREAM.length],
+    size: rand(1.1, 3), tw: Math.random() * 6.28, speed: rand(0.03, 0.065)
+  });
+}
+
+// ---------- 裝飾球（每支手機位置、順序都一樣）----------
+let seed = 20261225;
+const srand = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const M = 48;
+const ORN = [];
+for (let i = 0; i < M; i++) {
+  const h = 0.07 + 0.85 * ((i + 0.5) / M) + (srand() - 0.5) * 0.024;
+  const a = i * 2.39996, r = (1 - h) * 0.97;
+  ORN.push({ x: Math.cos(a) * r, y: 1.05 - h * 2.1, z: Math.sin(a) * r, col: PAL.orn[i % PAL.orn.length], litAt: 0, ph: srand() * 6.28 });
+}
+const ORDER = ORN.map((o, i) => [i, -o.y + srand() * 0.9]).sort((a, b) => a[1] - b[1]).map(a => a[0]);
+
+const snow = Array.from({ length: 120 }, () => ({ x: Math.random(), y: Math.random(), r: rand(0.5, 1.8), v: rand(0.0003, 0.001), d: Math.random() * 6.28 }));
+const bubbles = Array.from({ length: 26 }, () => ({ x: Math.random(), y: Math.random(), r: rand(8, 34), v: rand(0.0005, 0.0016), d: Math.random() * 6.28 }));
+
+// ---------- 狀態 ----------
+let mode = 'scatter', angle = 0, spin = 0, started = false;
+const w = { tree: 0, heart: 0, star: 0, scatter: 1, dream: 0 };
+let starLit = 0, starFlash = 0, litShown = 0, totalWishes = 0, recent = 0, peers = 1;
+let unlocked = false, isOwner = false;
+const meteors = [], sparks = [], rings = [], lanterns = [];
+let blessPool = [];       // {t, at}
+let festival = 0;         // 聖誕零點的同步時刻 0~1
+
+const $ = id => document.getElementById(id);
+const textEl = $('text'), msgEl = $('msg'), hint = $('hint'), info = $('info'), bar = $('bar'), toastEl = $('toast');
+
+function setMode(m) {
+  if (m === mode) return;
+  mode = m;
+  msgEl.style.opacity = 0;
+  clearTimeout(setMode.t);
+  setMode.t = setTimeout(() => { msgEl.textContent = G.msg[mode] || ''; msgEl.style.opacity = 1; }, 700);
+}
+function toast(html, ms = 4000) {
+  toastEl.innerHTML = html; toastEl.classList.add('on');
+  clearTimeout(toast.t); toast.t = setTimeout(() => toastEl.classList.remove('on'), ms);
+}
+
+// ---------- 聖誕夜零點（以台灣時間為準，大家同一刻）----------
+function xmasMoment(now = Date.now()) {
+  const y = new Date(now + 8 * 3600e3).getUTCFullYear();
+  let t = Date.UTC(y, 11, 24, 16, 0, 0);               // 12/25 00:00 (UTC+8)
+  if (now > t + 24 * 3600e3) t = Date.UTC(y + 1, 11, 24, 16, 0, 0);
+  return t;
+}
+function countdownText() {
+  const now = Date.now(), t = xmasMoment(now), d = t - now;
+  if (d <= 0) return '<b>聖誕快樂！</b>';
+  if (d > 30 * 86400e3) return '';
+  if (d > 86400e3) return `距離聖誕夜零點還有 <b>${Math.ceil(d / 86400e3)}</b> 天`;
+  const s = Math.floor(d / 1000), hh = String(Math.floor(s / 3600)).padStart(2, '0'), mm = String(Math.floor(s / 60) % 60).padStart(2, '0'), ss = String(s % 60).padStart(2, '0');
+  return `距離聖誕夜零點還有 <b>${hh}:${mm}:${ss}</b>`;
+}
+
+function updateInfo() {
+  const n = Math.max(totalWishes, litShown);
+  const lines = [];
+  lines.push(n ? `✦ 已有 <b>${n}</b> 個願望點亮了這棵樹` : '✦ 等待第一個願望');
+  if (!unlocked) lines.push(`<span class="dim">再 ${Math.max(1, UNLOCK_AT - n)} 個願望，星星裡的信就會打開</span>`);
+  else lines.push('<span class="dim">星星裡的信已經打開了 ✉</span>');
+  lines.push(peers > 1 ? `此刻有 <b>${peers - 1}</b> 個人和你一起看著這棵樹` : '<span class="dim">此刻只有你在這裡</span>');
+  const cd = countdownText(); if (cd) lines.push(cd);
+  info.innerHTML = lines.join('<br>');
+}
+setInterval(updateInfo, 1000);
+
+function checkUnlock(live) {
+  const n = Math.max(totalWishes, litShown);
+  if (!unlocked && n >= UNLOCK_AT) {
+    unlocked = true;
+    $('btnLetter').classList.remove('hidden'); $('btnLetter').classList.add('glow');
+    $('lPreview').classList.add('hidden');
+    if (live && started) {
+      starFlash = 1.5;
+      const s = starPos(); burst(s.x, s.y, PAL.accent2, 70, 1.8);
+      setTimeout(() => openLetter(), 1600);
+    }
+  }
+  updateInfo();
+}
+
+// ---------- 投影 ----------
+let cosA = 1, sinA = 0;
+const D = 3.2;
+function proj(x, y, z) {
+  const rx = x * cosA - z * sinA, rz = x * sinA + z * cosA;
+  const f = D / (D + rz);
+  return { x: CX + rx * S * f, y: CY + y * S * f, f, rz };
+}
+const starPos = () => proj(0, -1.12, 0);
+
+// ---------- 流星 ----------
+function launchMeteor(target, onArrive, delay = 0, opts = {}) {
+  const fromLeft = Math.random() < 0.5;
+  meteors.push({
+    sx: opts.sx ?? (fromLeft ? rand(-0.1, 0.25) * W : rand(0.75, 1.1) * W), sy: opts.sy ?? rand(-0.12, 0.05) * H,
+    target, onArrive, t0: performance.now() + delay, dur: opts.dur || rand(1300, 1700), trail: [], curve: opts.curve ?? rand(-0.18, 0.18), small: opts.small
+  });
+}
+function burst(x, y, rgb, n = 26, power = 1) {
+  rings.push({ x, y, t: 0, rgb, power });
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2, v = rand(0.6, 3.2) * power;
+    sparks.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 0.4, life: 1, decay: rand(0.012, 0.03), rgb, size: rand(1.5, 4) });
+  }
+}
+function lightNextOrnament(fromStar) {
+  const o = ORN[ORDER[litShown % M]];
+  const go = () => { o.litAt = performance.now(); litShown++; const p = proj(o.x, o.y, o.z); burst(p.x, p.y, o.col, 18, 0.7); checkUnlock(true); };
+  if (fromStar) {
+    const s = starPos();
+    launchMeteor(() => proj(o.x, o.y, o.z), go, 0, { sx: s.x, sy: s.y, dur: 900, curve: 0.25, small: true });
+  } else launchMeteor(() => proj(o.x, o.y, o.z), go);
+}
+
+// ---------- 音樂盒：〈平安夜〉（1818，公有領域）----------
+let actx = null, musicOn = false, nextNoteTime = 0, noteIdx = 0, musicTimer = null;
+const F = { C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392, A4: 440, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46 };
+const SONG = [
+  ['G4',3],['A4',1],['G4',2],['E4',6], ['G4',3],['A4',1],['G4',2],['E4',6],
+  ['D5',4],['D5',2],['B4',6], ['C5',4],['C5',2],['G4',6],
+  ['A4',4],['A4',2],['C5',3],['B4',1],['A4',2], ['G4',3],['A4',1],['G4',2],['E4',6],
+  ['A4',4],['A4',2],['C5',3],['B4',1],['A4',2], ['G4',3],['A4',1],['G4',2],['E4',6],
+  ['D5',4],['D5',2],['F5',3],['D5',1],['B4',2], ['C5',6],['E5',6],
+  ['C5',2],['G4',2],['E4',2],['G4',3],['F4',1],['D4',2], ['C4',12], [null, 6]
+];
+const EIGHTH = 0.27;
+function pluck(freq, t) {
+  [[1, 0.16], [2, 0.05], [3, 0.02]].forEach(([mul, vol]) => {
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = 'sine'; o.frequency.value = freq * mul;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.8 / mul);
+    o.connect(g).connect(actx.destination); o.start(t); o.stop(t + 2);
+  });
+}
+function scheduler() {
+  while (nextNoteTime < actx.currentTime + 0.3) {
+    const [n, len] = SONG[noteIdx];
+    if (n) pluck(F[n], nextNoteTime);
+    nextNoteTime += len * EIGHTH;
+    noteIdx = (noteIdx + 1) % SONG.length;
+  }
+}
+function startMusic() {
+  try {
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    actx.resume();
+    nextNoteTime = actx.currentTime + 0.1;
+    clearInterval(musicTimer); musicTimer = setInterval(scheduler, 80);
+    musicOn = true; $('music').classList.remove('off');
+  } catch (e) { console.log(e); }
+}
+function stopMusic() { clearInterval(musicTimer); musicOn = false; $('music').classList.add('off'); }
+$('music').addEventListener('click', () => musicOn ? stopMusic() : startMusic());
+
+// ---------- 開場：信封 → 許願 ----------
+$('envelope').addEventListener('click', () => {
+  $('env').classList.add('open');
+  startMusic();
+  setTimeout(() => { $('envelope').classList.add('hide'); $('wish').classList.remove('hide'); }, 1100);
+});
+
+function closeWish() { $('wish').classList.add('hide'); $('wishText').blur(); }
+function openWish() {
+  $('wishText').value = '';
+  $('wishSub').textContent = '再許一個願吧';
+  $('capsule').classList.add('hidden');
+  $('wish').classList.remove('hide');
+}
+$('skip').addEventListener('click', () => { closeWish(); if (!started) startShow(false); });
+$('go').addEventListener('click', () => {
+  const text = $('wishText').value.trim();
+  closeWish();
+  saveWish(text);
+  if (text) setTimeout(() => toast('你的願望已經封進時光膠囊 ✦<br><span style="opacity:.7;font-size:12px">明年聖誕節回來這裡，就能打開它</span>', 4500), started ? 1800 : 6500);
+  if (!started) startShow(true); else lightNextOrnament(false);
+});
+$('btnWish').addEventListener('click', openWish);
+
+function startShow(wished) {
+  started = true;
+  setMode('tree');
+  setTimeout(() => {
+    launchMeteor(starPos, () => {
+      starLit = 1; starFlash = 1;
+      const s = starPos(); burst(s.x, s.y, PAL.accent2, 50, 1.4);
+      if (wished) setTimeout(() => lightNextOrnament(true), 500);
+      setTimeout(() => {
+        textEl.classList.add('show'); hint.style.opacity = 1; info.style.opacity = 1; bar.classList.add('on'); $('music').classList.add('on');
+        setTimeout(() => hint.style.opacity = 0, 8000);
+        setTimeout(() => toast('有人給了你密語嗎？<br>按下方「🔐 密語祝福」打開只屬於你的祝福', 4500), 1800);
+      }, 900);
+    });
+  }, 1700);
+}
+
+// ---------- 祝福 ----------
+$('btnBless').addEventListener('click', () => { $('blessText').value = ''; $('bless').classList.remove('hide'); });
+$('blessCancel').addEventListener('click', () => $('bless').classList.add('hide'));
+$('blessGo').addEventListener('click', () => {
+  const t = $('blessText').value.trim().slice(0, 30);
+  $('bless').classList.add('hide'); $('blessText').blur();
+  if (!t) return;
+  const at = Date.now();
+  spawnLantern(t, true, { owner: uid || 'local', at });
+  saveBlessing(t, at);
+});
+function spawnLantern(text, mine, meta = {}) {
+  const side = Math.random() < 0.5 ? -1 : 1;
+  const x = W < 600 ? W * rand(0.3, 0.7) : CX + side * rand(0.62, 0.95) * S * 1.25;
+  lanterns.push({ text, x, sx: x, y: H * 0.72, vy: rand(0.25, 0.4), life: 0, mine, ph: Math.random() * 6, owner: meta.owner, at: meta.at });
+}
+let lanternIdx = 0;
+setInterval(() => {
+  if (!started || !blessPool.length || lanterns.length > 3 || document.hidden || lanterns.some(l => l.y > H * 0.72 - 70)) return;
+  const b = blessPool[lanternIdx++ % blessPool.length];
+  spawnLantern(b.t, !!uid && b.owner === uid, b);
+}, 4200);
+
+// ---------- 星星裡的信 ----------
+function openLetter() {
+  toastEl.classList.remove('on');
+  $('lTo').textContent = 'To. ' + G.to;
+  $('lBody').textContent = G.letter;
+  $('lFrom').textContent = 'From. ' + G.from;
+  $('lPreview').classList.toggle('hidden', unlocked);
+  $('letter').classList.remove('hide');
+}
+$('btnLetter').addEventListener('click', openLetter);
+$('lClose').addEventListener('click', () => $('letter').classList.add('hide'));
+
+// ---------- 密語祝福（用密語加密，只有知道密語的人打得開）----------
+$('btnSecret').classList.remove('hidden'); $('btnSecret').classList.add('glow');
+let secretFx = 'heart';
+document.querySelectorAll('.fx').forEach(b => b.addEventListener('click', () => {
+  secretFx = b.dataset.fx; document.querySelectorAll('.fx').forEach(x => x.classList.toggle('on', x === b));
+}));
+const enc = new TextEncoder(), dec = new TextDecoder();
+const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const unb64 = str => Uint8Array.from(atob(str), c => c.charCodeAt(0));
+async function pbkdf2(pw, salt, usage) {
+  const base = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, usage === 'bits' ? ['deriveBits'] : ['deriveKey']);
+  const params = { name: 'PBKDF2', salt, iterations: 150000, hash: 'SHA-256' };
+  if (usage === 'bits') return crypto.subtle.deriveBits(params, base, 160);
+  return crypto.subtle.deriveKey(params, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+async function lookupId(pw) {
+  const bits = await pbkdf2(pw, enc.encode('xmas-tree-lookup-v1'), 'bits');
+  return [...new Uint8Array(bits)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function switchTab(write) {
+  $('tabRead').classList.toggle('on', !write); $('tabWrite').classList.toggle('on', write);
+  $('paneRead').classList.toggle('hidden', write); $('paneWrite').classList.toggle('hidden', !write);
+}
+$('tabRead').addEventListener('click', () => switchTab(false));
+$('tabWrite').addEventListener('click', () => switchTab(true));
+$('btnSecret').addEventListener('click', () => {
+  $('sMsg1').textContent = ''; $('sMsg1').className = 'note'; switchTab(false); $('secret').classList.remove('hide');
+});
+document.querySelectorAll('.sClose').forEach(b => b.addEventListener('click', () => { $('secret').classList.add('hide'); document.activeElement && document.activeElement.blur(); }));
+
+$('sSave').addEventListener('click', async () => {
+  const msg = $('sMsg2'); msg.className = 'note';
+  const to = $('wTo').value.trim(), text = $('wText').value.trim(), from = $('wFrom').value.trim(), pw = $('wKey').value.trim();
+  if (!text) { msg.className = 'note err'; msg.textContent = '先寫下想說的話吧'; return; }
+  if (pw.length < 4) { msg.className = 'note err'; msg.textContent = '密語至少要 4 個字'; return; }
+  if (!db || !uid || !canWrite || !crypto.subtle) { msg.className = 'note err'; msg.textContent = '你目前沒有權限封存祝福，請分享連結給你的人調整權限'; return; }
+  msg.textContent = '封存中……';
+  try {
+    const k = await lookupId(pw);
+    const hit = await db.collection('secrets').where('keys', 'array-contains', k).get();
+    if (hit.docs.some(d => d.id !== uid)) { msg.className = 'note err'; msg.textContent = '這個密語已經有人用過了，換一個吧'; return; }
+    const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+    const key = await pbkdf2(pw, salt, 'key');
+    const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(JSON.stringify({ to, text, from, fx: secretFx })));
+    const ref = db.doc('secrets/' + uid);
+    const cur = await ref.get();
+    const d = cur.exists ? cur.data() : {};
+    let items = Array.isArray(d.items) ? d.items.filter(it => it && it.k !== k) : [];
+    items = [...items, { k, s: b64(salt), iv: b64(iv), c: b64(ct), at: Date.now() }].slice(-20);
+    await ref.set({ keys: items.map(it => it.k), items });
+    msg.className = 'note ok';
+    msg.textContent = `封存好了 ✦ 把密語「${pw}」偷偷告訴${to || '對方'}，請他打開這個連結、按「密語祝福」輸入就能看到`;
+    $('wText').value = ''; $('wKey').value = '';
+  } catch (e) {
+    console.log('secret save', e);
+    msg.className = 'note err'; msg.textContent = (e && e.code === 'invalid_argument') ? '你目前沒有權限封存祝福' : '封存失敗了，等一下再試一次';
+  }
+});
+
+$('sOpen').addEventListener('click', async () => {
+  const msg = $('sMsg1'); msg.className = 'note';
+  const pw = $('sKey').value.trim();
+  if (!pw) return;
+  if (!db || !crypto.subtle) { msg.className = 'note err'; msg.textContent = '現在連不上祝福資料，請登入後再試'; return; }
+  msg.textContent = '尋找中……';
+  try {
+    const k = await lookupId(pw);
+    const hit = await db.collection('secrets').where('keys', 'array-contains', k).get();
+    let found = null;
+    for (const d of hit.docs) {
+      const it = ((d.data() || {}).items || []).find(x => x && x.k === k);
+      if (!it) continue;
+      const key = await pbkdf2(pw, unb64(it.s), 'key');
+      const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(it.iv) }, key, unb64(it.c));
+      found = JSON.parse(dec.decode(pt));
+    }
+    if (!found) { msg.className = 'note err'; msg.textContent = '找不到這個密語的祝福，再確認一下？'; return; }
+    $('secret').classList.add('hide'); $('sKey').value = ''; $('sKey').blur();
+    setMode(['heart', 'star', 'dream'].includes(found.fx) ? found.fx : 'heart');
+    const sp = starPos(); burst(W / 2, H * 0.4, PAL.accent2, 80, 2); burst(sp.x, sp.y, PAL.accent, 40, 1.4);
+    setTimeout(() => {
+      $('lTo').textContent = 'To. ' + (String(found.to || '').slice(0, 20) || '你');
+      $('lBody').textContent = String(found.text || '').slice(0, 300);
+      $('lFrom').textContent = 'From. ' + (String(found.from || '').slice(0, 20) || '一個在乎你的人');
+      $('lPreview').classList.add('hidden');
+      $('letter').classList.remove('hide');
+    }, 1200);
+  } catch (e) { console.log('secret open', e); msg.className = 'note err'; msg.textContent = '找不到這個密語的祝福，再確認一下？'; }
+});
+
+// ---------- 雪橇與麋鹿（點一下會掉禮物）----------
+const FORTUNES = [
+  '明年的你，會遇到一件讓你笑很久的事。',
+  '你在意的那件事，會慢慢往好的方向走。',
+  '有人正在偷偷為你加油，只是你還不知道。',
+  '大吉：明年的好運，會在你最不經意的時候出現。',
+  '你今年已經很努力了，記得好好抱抱自己。',
+  '明年會有一場說走就走的旅行在等你。',
+  '你值得被溫柔對待，也請溫柔對待自己。',
+  '下一個冬天，你身邊會多一個重要的人。',
+  '吉：今年沒說出口的話，明年會找到機會說。',
+  '你的存在，讓某個人的這一年亮了一點。',
+  '明年想做的事，從第一步開始就已經贏了一半。',
+  '大吉：你許下的願望，正在路上了。',
+  '今晚適合吃一點甜的，然後早點睡。',
+  '你會在某個平凡的日子，突然覺得很幸福。',
+  '有些人會離開，但留下來的，都是真心的。',
+  '中吉：錢包會比今年更厚一點點。'
+];
+let sleigh = null, nextSleigh = 0, gifts = [], sleighTipShown = false;
+const GLITTER = ['255,236,180', '255,255,255', null, null];   // null = 主題色
+
+function bez(P, u) {
+  const v = 1 - u;
+  return [v*v*v*P[0][0] + 3*v*v*u*P[1][0] + 3*v*u*u*P[2][0] + u*u*u*P[3][0],
+          v*v*v*P[0][1] + 3*v*v*u*P[1][1] + 3*v*u*u*P[2][1] + u*u*u*P[3][1]];
+}
+function newSleigh(now) {
+  const sc = W < 600 ? 0.95 : 1.25;
+  const ltr = Math.random() < 0.5, loop = Math.random() < 0.35;
+  const yMax = H * 0.62;
+  const P0 = [ltr ? -120 : W + 120, rand(0.05, 0.55) * yMax + (Math.random() < 0.4 ? H * 0.25 : 0)];
+  const P3 = [ltr ? W + 420 * sc : -420 * sc, rand(0.0, 0.5) * yMax];
+  let c1 = [rand(0.2, 0.5) * W, rand(0.05, 1) * yMax], c2 = [rand(0.5, 0.85) * W, rand(0.05, 1) * yMax];
+  if (!ltr) { c1[0] = W - c1[0]; c2[0] = W - c2[0]; }
+  if (loop) { const t = c1[0]; c1[0] = c2[0]; c2[0] = t; c1[1] = rand(0.6, 1) * yMax; c2[1] = rand(0.05, 0.3) * yMax; }   // 交叉的控制點 → 繞一圈
+  const P = [P0, c1, c2, P3];
+  const lut = [0]; let prev = bez(P, 0);
+  for (let i = 1; i <= 240; i++) { const q = bez(P, i / 240); lut.push(lut[i - 1] + Math.hypot(q[0] - prev[0], q[1] - prev[1])); prev = q; }
+  const L = lut[240];
+  return { P, lut, L, sc, t0: now, dur: clamp(L / (W < 600 ? 0.11 : 0.16), 6500, 11000), dropped: false, trail: [] };
+}
+function atDist(sl, d) {            // 依路徑長度取點與方向
+  d = clamp(d, 0, sl.L);
+  let lo = 0, hi = 240;
+  while (hi - lo > 1) { const m = (lo + hi) >> 1; sl.lut[m] < d ? lo = m : hi = m; }
+  const u = (lo + (d - sl.lut[lo]) / Math.max(1e-6, sl.lut[hi] - sl.lut[lo])) / 240;
+  const a = bez(sl.P, u), b = bez(sl.P, Math.min(1, u + 0.004));
+  return { x: a[0], y: a[1], dx: b[0] - a[0] || -1, dy: b[1] - a[1] };
+}
+function sleighParts(now) {
+  const sl = sleigh, k = (now - sl.t0) / sl.dur;
+  const chain = (52 * 3 + 80) * sl.sc;
+  const head = k * (sl.L + chain);
+  const parts = [];
+  for (let i = 0; i < 4; i++) parts.push({ kind: 'deer', i, ...atDist(sl, head - i * 52 * sl.sc) });
+  parts.push({ kind: 'sleigh', ...atDist(sl, head - chain) });
+  return { parts, k, done: head - chain > sl.L };
+}
+function orient(p) {                // 讓圖形面向飛行方向（原圖面朝左）
+  ctx.translate(p.x, p.y);
+  let dx = p.dx, dy = p.dy; const n = Math.hypot(dx, dy) || 1; dx /= n; dy /= n;
+  if (dx >= 0) { ctx.scale(-1, 1); ctx.rotate(clamp(Math.atan2(-dy, dx), -0.7, 0.7)); }
+  else ctx.rotate(clamp(Math.atan2(-dy, -dx), -0.7, 0.7));
+}
+function drawReindeerLocal(t, ph) {
+  ctx.beginPath(); ctx.ellipse(0, 0, 16, 7, -0.08, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-12, -3); ctx.lineTo(-19, -14); ctx.lineTo(-14, -15); ctx.lineTo(-8, -4); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(-22, -15, 6.5, 3.6, -0.25, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(16, -3); ctx.lineTo(21, -6); ctx.lineTo(17, 0); ctx.fill();
+  ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(-19, -18); ctx.lineTo(-16, -29); ctx.moveTo(-17, -24); ctx.lineTo(-12, -27); ctx.moveTo(-16, -29); ctx.lineTo(-13, -33);
+  ctx.moveTo(-21, -18); ctx.lineTo(-23, -28); ctx.moveTo(-22, -24); ctx.lineTo(-27, -27);
+  ctx.stroke();
+  ctx.lineWidth = 2.2; ctx.beginPath();
+  [[-10, 0], [-6, 1.6], [9, 3.2], [12, 4.8]].forEach(([lx, p]) => {
+    const a = Math.sin(t * 9 + p + ph) * 7;
+    ctx.moveTo(lx, 4); ctx.lineTo(lx + a * 0.6, 10); ctx.lineTo(lx + a, 16);
+  });
+  ctx.stroke();
+}
+function drawSleighLocal() {
+  ctx.beginPath(); ctx.moveTo(-6, -4); ctx.quadraticCurveTo(-4, 6, 8, 6); ctx.lineTo(52, 6); ctx.lineTo(56, -22); ctx.lineTo(40, -14); ctx.lineTo(4, -12); ctx.closePath(); ctx.fill();
+  ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-14, 10); ctx.quadraticCurveTo(-18, 14, -10, 15); ctx.lineTo(58, 15);
+  ctx.moveTo(10, 6); ctx.lineTo(10, 15); ctx.moveTo(46, 6); ctx.lineTo(46, 15); ctx.stroke();
+  ctx.beginPath(); ctx.arc(40, -22, 10, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(14, -12); ctx.lineTo(26, -12); ctx.lineTo(21, -28); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.arc(20, -30, 4.5, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(16, -32); ctx.lineTo(25, -33); ctx.lineTo(28, -27); ctx.closePath(); ctx.fill();
+}
+function drawSleigh(now) {
+  const { parts } = sleighParts(now), sc = sleigh.sc, t = now / 1000;
+  const sl = parts[4];
+  // 魔法光帶：雪橇走過的路徑
+  sleigh.trail.push([sl.x, sl.y]); if (sleigh.trail.length > 70) sleigh.trail.shift();
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  const tr = sleigh.trail;
+  for (let j = 1; j < tr.length; j++) {
+    const a = j / tr.length;
+    ctx.strokeStyle = `rgba(${PAL.accent},${a * 0.35})`; ctx.lineWidth = a * 22 * sc;
+    ctx.beginPath(); ctx.moveTo(tr[j-1][0], tr[j-1][1]); ctx.lineTo(tr[j][0], tr[j][1]); ctx.stroke();
+    ctx.strokeStyle = `rgba(255,245,220,${a * 0.6})`; ctx.lineWidth = a * 3 * sc;
+    ctx.stroke();
+  }
+  // 灑下的金粉
+  for (let n = 0; n < 7; n++) {
+    const c = GLITTER[Math.random() * GLITTER.length | 0] || PAL.accent2;
+    sparks.push({ x: sl.x + rand(-20, 20) * sc, y: sl.y + rand(-14, 14) * sc, vx: rand(-0.6, 0.6), vy: rand(0.2, 1.3), life: 1, decay: rand(0.008, 0.018), rgb: c, size: rand(1.2, 3.4) * sc });
+  }
+  if (Math.random() < 0.25) { const q = parts[Math.random() * 4 | 0]; burst(q.x, q.y, PAL.accent2, 5, 0.35); }
+  // 光暈
+  for (const p of parts) { const r = (p.kind === 'sleigh' ? 70 : 42) * sc; ctx.globalAlpha = 0.55; ctx.drawImage(sprite(p.kind === 'sleigh' ? '255,236,190' : PAL.accent), p.x - r, p.y - r, r * 2, r * 2); }
+  ctx.restore();
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+  ctx.fillStyle = `rgba(${PAL.accent2},.97)`; ctx.strokeStyle = `rgba(${PAL.accent2},.97)`;
+  ctx.shadowColor = `rgb(${PAL.accent})`; ctx.shadowBlur = 18;
+  ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(sl.x, sl.y);                     // 韁繩
+  for (let i = 3; i >= 0; i--) ctx.lineTo(parts[i].x, parts[i].y);
+  ctx.stroke();
+  parts.forEach((p, i) => {
+    ctx.save(); orient(p); ctx.scale(sc, sc);
+    if (p.kind === 'deer') { ctx.translate(0, Math.sin(t * 5 + i) * 2); drawReindeerLocal(t, i * 1.3); }
+    else { ctx.translate(-20, 0); drawSleighLocal(); }
+    ctx.restore();
+  });
+  ctx.restore();
+}
+function dropGift() {
+  if (!sleigh || sleigh.dropped) return false;
+  sleigh.dropped = true;
+  const p = sleighParts(performance.now()).parts[4];
+  gifts.push({ x: clamp(p.x, 30, W - 30), y: p.y, vy: 0.5, rot: 0, land: CY + S * rand(0.85, 1.0), opened: false, col: PAL.orn[Math.random() * PAL.orn.length | 0] });
+  burst(p.x, p.y, '255,236,190', 30, 1);
+  return true;
+}
+function drawGifts() {
+  for (let i = gifts.length - 1; i >= 0; i--) {
+    const g = gifts[i];
+    if (!g.opened) {
+      g.vy = Math.min(g.vy + 0.06, 3.2); g.y += g.vy; g.rot = Math.sin(g.y / 30) * 0.3;
+      if (g.y >= g.land) {
+        g.opened = true; burst(g.x, g.y, g.col, 50, 1.3); burst(g.x, g.y, '255,240,200', 20, 0.8);
+        setTimeout(() => {
+          $('lTo').textContent = 'To. 接住禮物的你';
+          $('lBody').textContent = '🎁  聖誕籤\n\n' + FORTUNES[Math.random() * FORTUNES.length | 0];
+          $('lFrom').textContent = 'From. 路過的雪橇';
+          $('lPreview').classList.add('hidden');
+          $('letter').classList.remove('hide');
+        }, 700);
+        gifts.splice(i, 1); continue;
+      }
+    }
+    ctx.save(); ctx.translate(g.x, g.y); ctx.rotate(g.rot);
+    ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+    ctx.shadowColor = `rgb(${g.col})`; ctx.shadowBlur = 16;
+    ctx.fillStyle = `rgb(${g.col})`; ctx.fillRect(-10, -9, 20, 18);
+    ctx.shadowBlur = 0; ctx.fillStyle = '#fff';
+    ctx.fillRect(-2, -9, 4, 18); ctx.fillRect(-10, -2, 20, 4);
+    ctx.beginPath(); ctx.ellipse(-5, -12, 5, 3, -0.4, 0, 7); ctx.ellipse(5, -12, 5, 3, 0.4, 0, 7); ctx.fill();
+    ctx.restore();
+  }
+}
+function updateSleigh(now) {
+  if (!started || !starLit) return;
+  if (!sleigh && !nextSleigh) nextSleigh = now + 7000;
+  if (!sleigh && now > nextSleigh && (mode === 'tree' || mode === 'dream')) {
+    sleigh = newSleigh(now);
+    if (!sleighTipShown) { sleighTipShown = true; setTimeout(() => toast('雪橇飛過來了！點一下它，會掉下禮物喔 🎁', 3500), 900); }
+  }
+  if (sleigh) {
+    if (sleighParts(now).done) { sleigh = null; nextSleigh = now + rand(14000, 22000); }
+    else drawSleigh(now);
+  }
+}
+function hitSleigh(x, y) {
+  if (!sleigh) return false;
+  return sleighParts(performance.now()).parts.some(p => Math.hypot(p.x - x, p.y - y) < 55 * sleigh.sc);
+}
+
+// ---------- 共享資料 ----------
+let db = null, uid = null, myDoc = { n: 0, ts: [] }, myBless = [], docs = new Map(), blessDocs = new Map(), firstSnap = true, canWrite = true;
+
+async function saveWish(text) {
+  if (!db || !uid || !canWrite) return;
+  try {
+    const next = { n: myDoc.n + 1, ts: [...myDoc.ts.slice(-19), Date.now()] };
+    myDoc = next;
+    await db.doc('wishes/' + uid).set(next);
+    if (text) await db.collection('data/users/' + uid).doc('w' + Date.now()).set({ text, at: Date.now() });
+  } catch (e) { if (e && e.code === 'invalid_argument') canWrite = false; console.log('wish', e); }
+}
+async function saveBlessing(t, at = Date.now()) {
+  if (!db || !uid || !canWrite) { blessPool.push({ t, at, owner: uid || 'local' }); return; }
+  try {
+    myBless = [...myBless.slice(-2), { t, at }];
+    await db.doc('blessings/' + uid).set({ list: myBless });
+  } catch (e) { if (e && e.code === 'invalid_argument') canWrite = false; blessPool.push({ t, at, owner: uid || 'local' }); }
+}
+
+function cleanWish(d) {
+  const n = clamp(Math.floor(Number(d && d.n) || 0), 0, 1000);
+  const ts = Array.isArray(d && d.ts) ? d.ts.filter(t => typeof t === 'number').slice(-20) : [];
+  return { n, ts };
+}
+function cleanBless(d) {
+  const list = Array.isArray(d && d.list) ? d.list : [];
+  return list.filter(b => b && typeof b.t === 'string').slice(-3).map(b => ({ t: b.t.slice(0, 30), at: Number(b.at) || 0 }));
+}
+function recompute() {
+  let total = 0, rc = 0; const now = Date.now();
+  for (const d of docs.values()) { total += d.n; rc += d.ts.filter(t => Math.abs(now - t) < 60000).length; }
+  totalWishes = total; recent = rc;
+  checkUnlock(true);
+}
+setInterval(recompute, 2000);
+
+async function showCapsule() {
+  // 時光膠囊：找出自己「往年」許下的願望
+  try {
+    const snap = await db.collection('data/users/' + uid).get();
+    const thisYear = new Date(Date.now() + 8 * 3600e3).getUTCFullYear();
+    const old = snap.docs.map(d => d.data() || {}).filter(d => typeof d.text === 'string' && d.at && new Date(d.at + 8 * 3600e3).getUTCFullYear() < thisYear)
+      .sort((a, b) => b.at - a.at);
+    if (!old.length) return;
+    const yr = new Date(old[0].at + 8 * 3600e3).getUTCFullYear();
+    const box = $('capsule');
+    box.innerHTML = '';
+    const head = document.createElement('div'); head.textContent = `✉ 時光膠囊打開了。${yr} 年的你，許過這樣的願：`;
+    const q = document.createElement('div'); q.className = 'q'; q.textContent = '「' + old[0].text + '」';
+    const tail = document.createElement('div'); tail.textContent = '它實現了嗎？'; tail.style.opacity = .7;
+    box.append(head, q, tail);
+    box.classList.remove('hidden');
+  } catch (e) { console.log('capsule', e); }
+}
+
+(async () => {
+  for (let i = 0; i < 50 && !(window.claude && window.claude.use); i++) await new Promise(r => setTimeout(r, 100));
+  if (!window.claude || !window.claude.use) return;
+  // 同時在線的人
+  window.claude.use('room').then(room => {
+    if (!room) return;
+    try {
+      room.presence({ here: true });
+      room.onPeers(change => {
+        // 只算真人（不算系統），同一個人開好幾個分頁或裝置只算一次，也不算自己
+        const list = (change && Array.isArray(change.peers)) ? change.peers : [];
+        const others = new Set();
+        for (const p of list) if (p && p.kind === 'viewer' && !p.isMe) others.add(p.by || p.peer);
+        peers = 1 + others.size; updateInfo();
+      });
+    } catch (e) { console.log('room', e); }
+  }).catch(() => {});
+
+  try {
+    const user = await window.claude.use('user');
+    db = await window.claude.use('db');
+    if (!db || !user) { db = null; return; }
+    isOwner = !!(await user.isOwner());
+    if (isOwner) $('btnLetter').classList.remove('hidden');      // 你自己隨時可以預覽信
+    uid = await user.id();
+    if (!uid) { db = null; return; }
+    const cw = await user.can('data.write');
+    if (cw === false) { canWrite = false; $('note').textContent = '你的願望會點亮你畫面上的樹'; }
+    showCapsule();
+
+    db.collection('wishes').onSnapshot(snap => {
+      for (const ch of snap.docChanges()) {
+        if (ch.type === 'removed') { docs.delete(ch.doc.id); continue; }
+        const prev = docs.get(ch.doc.id), cur = cleanWish(ch.doc.data());
+        docs.set(ch.doc.id, cur);
+        if (ch.doc.id === uid) { if (cur.n > myDoc.n) myDoc = cur; continue; }
+        if (!firstSnap && started) {
+          const inc = prev ? cur.n - prev.n : cur.n;
+          for (let k = 0; k < Math.min(3, inc); k++) setTimeout(() => lightNextOrnament(false), k * 400);
+        }
+      }
+      if (firstSnap) {
+        firstSnap = false;
+        let t = 0; for (const d of docs.values()) t += d.n;
+        litShown = Math.max(litShown, t);
+        ORN.forEach(o => { if (!o.litAt) o.litAt = 1; });
+        checkUnlock(false);
+      }
+      recompute();
+    }, err => console.log('db', err));
+
+    db.collection('blessings').onSnapshot(snap => {
+      for (const ch of snap.docChanges()) {
+        if (ch.type === 'removed') { blessDocs.delete(ch.doc.id); continue; }
+        const list = cleanBless(ch.doc.data());
+        const prev = blessDocs.get(ch.doc.id) || [];
+        blessDocs.set(ch.doc.id, list);
+        if (ch.doc.id === uid) { myBless = list; continue; }
+        if (started && list.length && (!prev.length || list[list.length - 1].at > prev[prev.length - 1].at)) spawnLantern(list[list.length - 1].t, false, { owner: ch.doc.id, at: list[list.length - 1].at });
+      }
+      blessPool = [...blessDocs.entries()].flatMap(([id, list]) => list.map(b => ({ ...b, owner: id }))).sort(() => Math.random() - 0.5).slice(0, 200);
+    }, err => console.log('bless', err));
+  } catch (e) { db = null; console.log(e); }
+})();
+
+// ---------- 點擊 / 拖曳 ----------
+let down = null, lastX = 0;
+cv.addEventListener('pointerdown', e => {
+  if (window.extraPointerDown && window.extraPointerDown(e.clientX, e.clientY)) { down = null; return; }
+  down = { x: e.clientX, y: e.clientY, moved: false }; lastX = e.clientX;
+  const d0 = down;
+  setTimeout(() => {                                   // 長按
+    if (down === d0 && !d0.moved && started && starLit && window.extraLongPress) { d0.long = true; window.extraLongPress(d0.x, d0.y); }
+  }, 550);
+});
+cv.addEventListener('pointermove', e => {
+  if (!down) return;
+  if (Math.hypot(e.clientX - down.x, e.clientY - down.y) > 8) down.moved = true;
+  if (down.moved) { spin = (e.clientX - lastX) * 0.004; angle += spin; }
+  lastX = e.clientX;
+});
+function release() {
+  if (!down) return;
+  if (down.long) { down = null; return; }
+  if (!down.moved && started && starLit && window.extraTap && window.extraTap(down.x, down.y)) { down = null; return; }
+  if (!down.moved && started && starLit && hitSleigh(down.x, down.y)) { dropGift(); down = null; return; }
+  if (!down.moved && started && starLit) {
+    setMode(MODES[(MODES.indexOf(mode) + 1) % MODES.length]);
+    hint.style.opacity = 0;
+  }
+  down = null;
+}
+cv.addEventListener('pointerup', release);
+cv.addEventListener('pointercancel', release);
+cv.addEventListener('pointerleave', release);
+
+// ---------- 繪製 ----------
+function drawStar(x, y, r, lit, flash) {
+  ctx.save(); ctx.translate(x, y);
+  if (lit > 0.01) {
+    const R = r * (3 + flash * 6);
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
+    g.addColorStop(0, `rgba(${PAL.accent2},${0.9 * lit})`); g.addColorStop(1, `rgba(${PAL.accent},0)`);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, R, 0, 7); ctx.fill();
+    ctx.strokeStyle = `rgba(${PAL.accent2},${0.6 * lit})`; ctx.lineWidth = 1.2;
+    const L = r * (2.6 + Math.sin(performance.now() / 300) * 0.4 + flash * 4);
+    ctx.beginPath(); ctx.moveTo(-L, 0); ctx.lineTo(L, 0); ctx.moveTo(0, -L); ctx.lineTo(0, L); ctx.stroke();
+    if (unlocked) {                                     // 信打開後，星星外圈多一道光環
+      ctx.strokeStyle = `rgba(${PAL.accent},${0.5 + 0.3 * Math.sin(performance.now() / 400)})`;
+      ctx.beginPath(); ctx.arc(0, 0, r * 1.9, 0, 7); ctx.stroke();
+    }
+  }
+  ctx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const rr = i % 2 ? r * 0.42 : r, th = i * Math.PI / 5 - Math.PI / 2;
+    ctx.lineTo(Math.cos(th) * rr, Math.sin(th) * rr);
+  }
+  ctx.closePath();
+  if (lit > 0.01) { ctx.fillStyle = '#fbfdff'; ctx.shadowColor = `rgb(${PAL.accent})`; ctx.shadowBlur = 22 * lit; ctx.fill(); }
+  else { ctx.strokeStyle = 'rgba(200,220,240,.35)'; ctx.lineWidth = 1; ctx.stroke(); }
+  ctx.restore();
+}
+
+function drawDreamBackground(a, time) {
+  if (a < 0.01) return;
+  ctx.save();
+  ctx.globalAlpha = a;
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#120a2e'); g.addColorStop(0.5, '#2a1546'); g.addColorStop(1, '#3b1f4a');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.globalCompositeOperation = 'lighter';
+  [['120,220,255', 0.22], ['255,160,220', 0.32], ['190,150,255', 0.42]].forEach(([rgb, yy], k) => {
+    ctx.beginPath();
+    for (let x = -20; x <= W + 20; x += 20) {
+      const y = H * yy + Math.sin(x / 180 + time * 0.4 + k * 2) * 40 + Math.sin(x / 70 + time * 0.7 + k) * 12;
+      x === -20 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = `rgba(${rgb},${0.10 * a})`; ctx.lineWidth = 70; ctx.stroke();
+    ctx.strokeStyle = `rgba(${rgb},${0.12 * a})`; ctx.lineWidth = 16; ctx.stroke();
+  });
+  for (const b of bubbles) {
+    b.y -= b.v; b.d += 0.01; if (b.y < -0.1) { b.y = 1.1; b.x = Math.random(); }
+    const x = (b.x + Math.sin(b.d) * 0.02) * W, y = b.y * H;
+    const bg = ctx.createRadialGradient(x - b.r * 0.3, y - b.r * 0.3, 0, x, y, b.r);
+    bg.addColorStop(0, `rgba(255,255,255,${0.25 * a})`); bg.addColorStop(0.7, `rgba(200,220,255,${0.05 * a})`); bg.addColorStop(1, `rgba(255,200,240,${0.18 * a})`);
+    ctx.fillStyle = bg; ctx.beginPath(); ctx.arc(x, y, b.r, 0, 7); ctx.fill();
+  }
+  ctx.restore();
+}
+
+let lastFest = 0;
+const start = performance.now();
+function frame(now) {
+  const time = (now - start) / 1000;
+  for (const k in w) w[k] += ((k === mode ? 1 : 0) - w[k]) * 0.035;
+  starFlash *= 0.95;
+
+  // 聖誕零點：開場後的 90 秒內，所有人的樹一起大放光芒
+  const xm = xmasMoment(), since = Date.now() - xm;
+  const fest = started && since >= 0 && since < 90000;
+  festival += ((fest ? 1 : 0) - festival) * 0.03;
+  if (fest && now - lastFest > 260) {
+    lastFest = now;
+    const o = ORN[Math.random() * M | 0];
+    launchMeteor(Math.random() < 0.5 ? () => proj(o.x, o.y, o.z) : (() => { const tx = rand(0, W), ty = rand(0.5, 1) * H; return () => ({ x: tx, y: ty }); })(),
+      () => { const p = proj(o.x, o.y, o.z); burst(p.x, p.y, o.col, 10, 0.6); }, 0, { dur: rand(900, 1400) });
+  }
+  $('big').classList.toggle('on', fest && since < 12000);
+  const xmasDay = since >= 0 && since < 86400e3;
+
+  const hype = clamp(Math.max(recent / 6, festival, xmasDay ? 0.35 : 0), 0, 1);
+
+  if (!down) {
+    const auto = mode === 'scatter' ? 0.0012 : mode === 'dream' ? 0.002 : mode === 'tree' ? 0.006 : 0.004;
+    spin *= 0.94; angle += (typeof window.gestureSpin === 'number') ? window.gestureSpin : auto + spin;
+  }
+  cosA = Math.cos(angle); sinA = Math.sin(angle);
+
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.globalAlpha = 1;
+  const bg = ctx.createRadialGradient(CX, CY + S * 0.6, 0, CX, CY, Math.max(W, H) * 0.8);
+  bg.addColorStop(0, PAL.bg[0]); bg.addColorStop(1, PAL.bg[1]);
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  drawDreamBackground(w.dream, time);
+  if (window.drawBehind) { ctx.save(); try { window.drawBehind(now, time); } catch (e) { console.log(e); } ctx.restore(); }
+
+  ctx.fillStyle = 'rgba(230,245,255,.6)';
+  for (const s of snow) {
+    s.y += s.v; s.d += 0.01;
+    if (s.y > 1) { s.y = -0.02; s.x = Math.random(); }
+    ctx.beginPath(); ctx.arc((s.x + Math.sin(s.d) * 0.01) * W, s.y * H, s.r, 0, 7); ctx.fill();
+  }
+
+  ctx.globalCompositeOperation = 'lighter';
+
+  if (w.tree > 0.02) {
+    for (let k = 0; k < 2; k++) {
+      ctx.beginPath();
+      ctx.ellipse(CX, CY + 1.1 * S, S * (0.95 + k * 0.25 + Math.sin(time * 1.5 + k) * 0.03), S * (0.16 + k * 0.05), 0, 0, 7);
+      ctx.strokeStyle = `rgba(${PAL.ring},${(0.25 - k * 0.1) * w.tree})`; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+  }
+
+  const pick = w.dream > 0.5 ? 'dcol' : w.heart > 0.5 ? 'hcol' : w.star > 0.5 ? 'stcol' : 'col';
+  for (const p of P) {
+    let tg;
+    if (mode === 'dream') {
+      const yy = ((p.dy - time * p.rise) % 3.4 + 3.4) % 3.4 - 1.7;
+      const a = p.da + time * 0.05;
+      tg = [Math.cos(a) * p.dr + Math.sin(time + p.tw) * 0.08, yy, Math.sin(a) * p.dr];
+    } else tg = p.T[mode];
+    const sp = mode === 'dream' ? p.speed * 0.6 : p.speed;
+    p.x += (tg[0] - p.x) * sp; p.y += (tg[1] - p.y) * sp; p.z += (tg[2] - p.z) * sp;
+    const q = proj(p.x, p.y, p.z);
+    if (D + q.rz < 0.3) continue;
+    const tw = 0.55 + 0.45 * Math.sin(time * (3 + hype * 4) + p.tw);
+    const sz = p.size * q.f * (mode === 'dream' ? 2.6 : 2.4);
+    const base = mode === 'scatter' && !started ? 0.55 : 0.95;
+    ctx.globalAlpha = clamp(tw * (0.25 + 0.5 * (1 - q.rz) / 2), 0, 1) * base;
+    ctx.drawImage(sprite(p[pick]), q.x - sz, q.y - sz, sz * 2, sz * 2);
+  }
+
+  // 一起在看的人：繞著樹轉的小光點
+  if (started && peers > 1 && mode !== 'dream') {
+    const n = Math.min(peers - 1, 30);
+    for (let i = 0; i < n; i++) {
+      const a = time * 0.35 + i * Math.PI * 2 / n;
+      const q = proj(Math.cos(a) * 1.25, 0.55 + Math.sin(time * 0.8 + i) * 0.25 - (i % 3) * 0.35, Math.sin(a) * 1.25);
+      const s = (7 + Math.sin(time * 3 + i) * 2) * q.f;
+      ctx.globalAlpha = 0.85;
+      ctx.drawImage(sprite('255,245,215'), q.x - s, q.y - s, s * 2, s * 2);
+    }
+  }
+
+  if (w.tree > 0.3) {
+    const glints = 3 + Math.floor(hype * 14);
+    for (let k = 0; k < glints; k++) {
+      if (Math.random() > 0.35) continue;
+      const p = P[Math.random() * N | 0];
+      const q = proj(p.x, p.y, p.z);
+      const s = rand(4, 10 + hype * 10) * q.f;
+      ctx.globalAlpha = rand(0.4, 1) * w.tree;
+      ctx.drawImage(sprite('235,248,255'), q.x - s, q.y - s, s * 2, s * 2);
+    }
+  }
+
+  // 裝飾球
+  if (w.tree > 0.02) {
+    const sorted = ORN.map((o, i) => ({ o, i, q: proj(o.x, o.y, o.z) })).sort((a, b) => b.q.rz - a.q.rz);
+    const litSet = new Set(ORDER.slice(0, festival > 0.5 ? M : Math.min(litShown, M)));
+    const extra = litShown > M ? clamp((litShown - M) / M, 0, 1) : 0;
+    for (const { o, i, q } of sorted) {
+      const back = q.rz > 0 ? 0.45 : 1;
+      if (litSet.has(i)) {
+        const age = o.litAt > 1 ? (now - o.litAt) / 1000 : 9;
+        const pop = age < 1.2 ? (1 - age / 1.2) * 2.2 : 0;
+        const flick = 0.75 + 0.25 * Math.sin(time * (2.5 + hype * 10) + o.ph);
+        const sz = (12 + hype * 16 + extra * 6 + pop * 16) * q.f * flick;
+        ctx.globalAlpha = w.tree * back * clamp(0.7 + hype * 0.3 + pop, 0, 1);
+        ctx.drawImage(sprite(o.col), q.x - sz, q.y - sz, sz * 2, sz * 2);
+        if (hype > 0.3 && Math.random() < hype * 0.15) {
+          ctx.globalAlpha = w.tree * back;
+          const L = sz * 1.6;
+          ctx.strokeStyle = `rgba(${o.col},.8)`; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(q.x - L, q.y); ctx.lineTo(q.x + L, q.y); ctx.moveTo(q.x, q.y - L); ctx.lineTo(q.x, q.y + L); ctx.stroke();
+        }
+      } else {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = w.tree * back * 0.8;
+        const r = 4.2 * q.f;
+        const g = ctx.createRadialGradient(q.x - r * 0.35, q.y - r * 0.35, 0, q.x, q.y, r);
+        g.addColorStop(0, 'rgba(240,248,255,.85)'); g.addColorStop(0.5, 'rgba(150,175,205,.45)'); g.addColorStop(1, 'rgba(70,95,130,.35)');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, 7); ctx.fill();
+        ctx.globalCompositeOperation = 'lighter';
+      }
+    }
+  }
+
+  // 流星
+  ctx.globalAlpha = 1;
+  for (let i = meteors.length - 1; i >= 0; i--) {
+    const m = meteors[i];
+    if (now < m.t0) continue;
+    const k = clamp((now - m.t0) / m.dur, 0, 1);
+    const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    const t = m.target();
+    const dx = t.x - m.sx, dy = t.y - m.sy;
+    const off = Math.sin(Math.PI * e) * m.curve;
+    const hx = m.sx + dx * e - dy * off, hy = m.sy + dy * e + dx * off;
+    m.trail.push([hx, hy]); if (m.trail.length > (m.small ? 14 : 26)) m.trail.shift();
+    for (let j = 1; j < m.trail.length; j++) {
+      const a = j / m.trail.length;
+      ctx.strokeStyle = `rgba(${PAL.accent2},${a * 0.8})`;
+      ctx.lineWidth = a * (m.small ? 2.5 : 4);
+      ctx.beginPath(); ctx.moveTo(m.trail[j-1][0], m.trail[j-1][1]); ctx.lineTo(m.trail[j][0], m.trail[j][1]); ctx.stroke();
+    }
+    const hs = m.small ? 12 : 20;
+    ctx.drawImage(sprite(PAL.accent2), hx - hs, hy - hs, hs * 2, hs * 2);
+    if (Math.random() < 0.7) sparks.push({ x: hx, y: hy, vx: rand(-0.4, 0.4), vy: rand(0, 0.8), life: 1, decay: rand(0.02, 0.04), rgb: PAL.accent2, size: rand(1, 2.5) });
+    if (k >= 1) { meteors.splice(i, 1); m.onArrive && m.onArrive(); }
+  }
+
+  for (let i = sparks.length - 1; i >= 0; i--) {
+    const s = sparks[i];
+    s.x += s.vx; s.y += s.vy; s.vy += 0.03; s.vx *= 0.98; s.life -= s.decay;
+    if (s.life <= 0) { sparks.splice(i, 1); continue; }
+    ctx.globalAlpha = s.life;
+    const sz = s.size * 2;
+    ctx.drawImage(sprite(s.rgb), s.x - sz, s.y - sz, sz * 2, sz * 2);
+  }
+  for (let i = rings.length - 1; i >= 0; i--) {
+    const r = rings[i]; r.t += 0.025;
+    if (r.t >= 1) { rings.splice(i, 1); continue; }
+    ctx.globalAlpha = (1 - r.t) * 0.8;
+    ctx.strokeStyle = `rgb(${r.rgb})`; ctx.lineWidth = 2 * (1 - r.t);
+    ctx.beginPath(); ctx.arc(r.x, r.y, 6 + r.t * 60 * r.power, 0, 7); ctx.stroke();
+  }
+
+  updateSleigh(now);
+  drawGifts();
+  if (window.drawExtras) { ctx.save(); try { window.drawExtras(now, time); } catch (e) { console.log(e); } ctx.restore(); }
+
+  // 飄上天空的祝福
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.font = `300 ${W < 600 ? 12 : 14}px 'Noto Serif TC', serif`;
+  ctx.textAlign = 'center';
+  for (let i = lanterns.length - 1; i >= 0; i--) {
+    const l = lanterns[i];
+    l.y -= l.vy; l.life += 1 / 60;
+    const a = clamp(Math.min(l.life / 1.5, (l.y - H * 0.05) / (H * 0.2)), 0, 1);
+    if (l.y < H * 0.04) { lanterns.splice(i, 1); continue; }
+    const x = l.x + Math.sin(l.life * 0.8 + l.ph) * 10; l.sx = x;
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.globalAlpha = a;
+    ctx.drawImage(sprite(l.mine ? PAL.accent : '255,225,170'), x - 12, l.y - 30, 24, 24);
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = a * 0.9;
+    ctx.fillStyle = '#f4faff'; ctx.shadowColor = `rgba(${PAL.accent},.9)`; ctx.shadowBlur = 8;
+    ctx.fillText(l.text, x, l.y);
+    ctx.shadowBlur = 0;
+  }
+
+  ctx.globalAlpha = 1;
+  if (w.tree > 0.05) {
+    const s = starPos();
+    ctx.globalAlpha = w.tree;
+    drawStar(s.x, s.y, 14 + Math.sin(time * 2) * 1.5 * starLit + festival * 4, starLit, starFlash + festival * 0.6);
+    ctx.globalAlpha = 1;
+  }
+
+  requestAnimationFrame(frame);
+}
+updateInfo();
+requestAnimationFrame(frame);
+</script>
+<script>
+/* =====================================================================
+   聖誕樹的玩法們：更多選單、鈴鐺、雪花願望、接流星、畫裝飾、
+   堆雪人、聖誕合照、年度回顧牆、交換禮物抽籤
+   （使用主程式的 ctx、proj、S、CX、CY、W、H、PAL、db、uid…）
+   ===================================================================== */
+(() => {
+// ---------- 樣式 ----------
+const css = document.createElement('style');
+css.textContent = `
+  .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
+  .menu-grid button { padding: 14px 6px; border-radius: 16px; cursor: pointer; font-family: 'Noto Serif TC', serif; font-size: 14px; letter-spacing: .1em;
+    color: #eef8ff; background: rgba(var(--accent), .1); border: 1px solid rgba(var(--accent2), .28); line-height: 1.5; }
+  .menu-grid button small { display: block; font-size: 11px; opacity: .6; letter-spacing: .05em; margin-top: 2px; }
+  .menu-grid button:active { transform: scale(.97); }
+  .menu-grid button:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 4px 0 10px; }
+  .chip { padding: 6px 11px; border-radius: 999px; cursor: pointer; font-family: 'Noto Serif TC', serif; font-size: 12px; letter-spacing: .08em;
+    color: rgba(230,244,255,.8); background: rgba(5,15,30,.4); border: 1px solid rgba(var(--accent2), .22); }
+  .chip.on { background: rgba(var(--accent), .35); color: #fff; border-color: rgba(var(--accent2), .7); }
+  .glabel { font-family: 'Noto Serif TC', serif; font-size: 12px; letter-spacing: .15em; color: rgba(220,238,255,.6); margin-top: 6px; }
+  .pad { display: block; margin: 0 auto; border-radius: 50%; touch-action: none; background: radial-gradient(circle at 35% 30%, #1b3352, #08142a);
+    box-shadow: 0 0 30px rgba(var(--accent), .3), inset 0 0 0 2px rgba(var(--accent2), .35); }
+  .swatch { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+  .swatch.on { border-color: #fff; box-shadow: 0 0 10px rgba(255,255,255,.6); }
+  #hud { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 9; display: none; gap: 18px;
+    font-family: 'Noto Serif TC', serif; font-size: 18px; letter-spacing: .1em; color: #fff; text-shadow: 0 0 12px rgba(var(--accent), .9);
+    background: rgba(5,15,30,.45); border: 1px solid rgba(var(--accent2), .3); border-radius: 999px; padding: 6px 18px; backdrop-filter: blur(6px); }
+  #countdown { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 9; pointer-events: none;
+    font-family: 'Noto Serif TC', serif; font-size: 90px; color: #fff; text-shadow: 0 0 30px rgba(var(--accent), 1); }
+  .board { text-align: left; font-family: 'Noto Serif TC', serif; font-size: 13px; color: #e8f4ff; margin-top: 10px; line-height: 1.9; }
+  .board .row { display: flex; justify-content: space-between; padding: 0 6px; border-radius: 8px; }
+  .board .row.me { background: rgba(var(--accent), .2); }
+  .bigscore { font-family: 'Noto Serif TC', serif; font-size: 46px; color: #fff; text-shadow: 0 0 20px rgba(var(--accent), .9); margin: 2px 0; }
+  .result-img { max-width: 100%; max-height: 46vh; border-radius: 12px; display: block; margin: 0 auto; box-shadow: 0 0 24px rgba(var(--accent), .3);
+    -webkit-touch-callout: default; user-select: auto; -webkit-user-select: auto; }
+  .memlist { text-align: left; max-height: 30vh; overflow: auto; font-family: 'Noto Serif TC', serif; font-size: 13px; line-height: 1.9; color: #e8f4ff; margin-top: 12px; }
+  .memlist div::before { content: '❄ '; opacity: .6; }
+`;
+document.head.appendChild(css);
+
+// ---------- 小工具 ----------
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const R = (a, b) => a + Math.random() * (b - a);
+const cl = (v, a, b) => Math.max(a, Math.min(b, v));
+const today = () => { const d = new Date(Date.now() + 8 * 3600e3); return d.toISOString().slice(0, 10); };
+const k = () => S / 250;                                  // 跟著樹的大小縮放
+const ready = () => (typeof db !== 'undefined' && db && uid) ? db : null;
+const writable = () => ready() && canWrite;
+function whenDb(fn) {
+  let n = 0;
+  const t = setInterval(() => { if (ready()) { clearInterval(t); fn(db); } else if (++n > 40) clearInterval(t); }, 500);
+}
+function panel(id, html) {
+  const o = document.createElement('div');
+  o.className = 'overlay hide'; o.id = id;
+  o.innerHTML = `<div class="card">${html}</div>`;
+  document.body.appendChild(o);
+  o.addEventListener('click', e => { if (e.target === o) close(id); });
+  return o;
+}
+const open = id => { $(id).classList.remove('hide'); };
+const close = id => { $(id).classList.add('hide'); if (document.activeElement) document.activeElement.blur(); };
+function chips(container, options, cur, onPick) {
+  container.innerHTML = '';
+  options.forEach((label, i) => {
+    const b = document.createElement('button'); b.className = 'chip' + (i === cur ? ' on' : ''); b.textContent = label;
+    b.addEventListener('click', () => { [...container.children].forEach(x => x.classList.remove('on')); b.classList.add('on'); onPick(i); });
+    container.appendChild(b);
+  });
+}
+const okImg = s => typeof s === 'string' && s.length < 140000 && /^data:image\/(png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(s);
+function collect(path, onChange) {        // 訂閱一個共享集合，回傳 Map(id → data)
+  const m = new Map();
+  whenDb(d => d.collection(path).onSnapshot(snap => {
+    for (const ch of snap.docChanges()) {
+      if (ch.type === 'removed') m.delete(ch.doc.id); else m.set(ch.doc.id, ch.doc.data() || {});
+    }
+    onChange && onChange(m);
+  }, e => console.log(path, e)));
+  return m;
+}
+
+// ---------- 更多選單 ----------
+panel('menu', `
+  <div class="t1">More Fun</div>
+  <div class="t2">今晚想玩什麼？</div>
+  <div class="menu-grid">
+    <button data-go="catch">☄ 接流星<small>30 秒小遊戲</small></button>
+    <button data-go="snow">☃ 堆雪人<small>站在樹下陪大家</small></button>
+    <button data-go="draw">✎ 畫裝飾<small>掛上聖誕樹</small></button>
+    <button data-go="photo">📷 聖誕合照<small>拍照或上傳</small></button>
+    <button data-go="memory">❄ 年度回顧<small>今年最開心的事</small></button>
+  </div>
+  <div class="btns"><button class="ghost" id="btnMine" style="flex:1">🗂 我放上去的東西</button></div>
+  <div class="btns" id="menuBless" style="margin-top:8px"></div>
+  <div class="btns" id="menuLetter" style="margin-top:8px"></div>
+  <div class="note">小祕密：在畫面上長按，會飄下一片雪花 ❄<br>樹旁邊的鈴鐺也可以搖搖看</div>
+`);
+$('menuBless').appendChild($('btnBless'));
+$('btnBless').className = 'ghost'; $('btnBless').style.flex = '1';
+$('btnBless').addEventListener('click', () => close('menu'));
+$('menuLetter').appendChild($('btnLetter'));
+$('btnLetter').className = 'ghost' + ($('btnLetter').classList.contains('hidden') ? ' hidden' : ''); $('btnLetter').style.flex = '1';
+$('btnLetter').addEventListener('click', () => close('menu'));
+new MutationObserver(() => { $('menuLetter').style.display = $('btnLetter').classList.contains('hidden') ? 'none' : ''; }).observe($('btnLetter'), { attributes: true });
+$('menuLetter').style.display = $('btnLetter').classList.contains('hidden') ? 'none' : '';
+$('btnMore').addEventListener('click', () => open('menu'));
+$('btnMine').addEventListener('click', () => { close('menu'); openMine(); });
+document.querySelectorAll('#menu [data-go]').forEach(b => b.addEventListener('click', () => {
+  close('menu');
+  ({ catch: startCatchIntro, snow: openSnowman, draw: openDraw, photo: openPhoto, memory: openMemory })[b.dataset.go]();
+}));
+
+// =====================================================================
+// 🔔 鈴鐺：點一下會響，所有正在看的人都聽得到
+// =====================================================================
+let bell = { swing: 0, v: 0 }, room = null, lastBellToast = 0;
+const bellPos = () => ({ x: CX + S * (W < 600 ? 0.62 : 0.78), y: CY - S * 0.62 });
+function ringSound() {
+  try {
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    actx.resume();
+    const t = actx.currentTime;
+    [[1, .18], [2.01, .08], [2.42, .06], [3.0, .05], [4.53, .03], [5.2, .02]].forEach(([m, v]) => {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = 'sine'; o.frequency.value = 784 * m;
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 2.6 / Math.sqrt(m));
+      o.connect(g).connect(actx.destination); o.start(t); o.stop(t + 3);
+    });
+  } catch (e) {}
+}
+function ring(fromMe) {
+  bell.v += fromMe ? 0.32 : 0.22;
+  ringSound();
+  const p = bellPos(); burst(p.x, p.y + 10, '255,230,160', 16, 0.7);
+  if (fromMe && room) { try { room.emit('bell', { at: Date.now() }); } catch (e) {} }
+  if (!fromMe && Date.now() - lastBellToast > 6000) { lastBellToast = Date.now(); toast('🔔 有人搖了鈴鐺，在跟你打招呼', 2500); }
+}
+(async () => {
+  for (let i = 0; i < 60 && !(window.claude && window.claude.use); i++) await new Promise(r => setTimeout(r, 100));
+  if (!window.claude || !window.claude.use) return;
+  try { room = await window.claude.use('room'); if (room) room.on('bell', () => ring(false)); } catch (e) { room = null; }
+})();
+function drawBell(time) {
+  if (w.tree < 0.3) return;
+  bell.v += -bell.swing * 0.08; bell.v *= 0.96; bell.swing += bell.v;
+  const p = bellPos(), s = k() * (W < 600 ? 1 : 1.1);
+  ctx.save(); ctx.globalAlpha = w.tree;
+  ctx.translate(p.x, p.y - 30 * s); ctx.rotate(bell.swing + Math.sin(time * 1.2) * 0.04);
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.drawImage(sprite('255,220,140'), -40 * s, -5 * s, 80 * s, 80 * s);
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.strokeStyle = 'rgba(255,240,210,.7)'; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(0, -40 * s); ctx.lineTo(0, 4 * s); ctx.stroke();
+  const g = ctx.createLinearGradient(-16 * s, 0, 16 * s, 0);
+  g.addColorStop(0, '#b8862f'); g.addColorStop(0.45, '#ffe7a3'); g.addColorStop(1, '#a3741f');
+  ctx.fillStyle = g; ctx.shadowColor = 'rgba(255,210,120,.9)'; ctx.shadowBlur = 14;
+  ctx.beginPath();
+  ctx.moveTo(-5 * s, 6 * s); ctx.quadraticCurveTo(-14 * s, 10 * s, -15 * s, 26 * s); ctx.quadraticCurveTo(-16 * s, 34 * s, -20 * s, 38 * s);
+  ctx.lineTo(20 * s, 38 * s); ctx.quadraticCurveTo(16 * s, 34 * s, 15 * s, 26 * s); ctx.quadraticCurveTo(14 * s, 10 * s, 5 * s, 6 * s); ctx.closePath(); ctx.fill();
+  ctx.shadowBlur = 0; ctx.fillStyle = '#8a5f16';
+  ctx.beginPath(); ctx.arc(Math.sin(bell.swing * 3) * 6 * s, 40 * s, 4 * s, 0, 7); ctx.fill();
+  ctx.fillStyle = '#e0526b';                                    // 蝴蝶結
+  ctx.beginPath(); ctx.ellipse(-8 * s, 3 * s, 8 * s, 4 * s, 0.3, 0, 7); ctx.ellipse(8 * s, 3 * s, 8 * s, 4 * s, -0.3, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(0, 4 * s, 3 * s, 0, 7); ctx.fill();
+  ctx.restore();
+}
+const hitBell = (x, y) => { const p = bellPos(); return w.tree > 0.5 && Math.hypot(x - p.x, y - (p.y - 8 * k())) < 34 * k() + 10; };
+
+// =====================================================================
+// ❄ 雪花願望：長按畫面，飄下一片獨一無二的雪花
+// =====================================================================
+const FLAKE_WORDS = [
+  '冬天再冷，也會有人記得替你留一盞燈。', '慢慢來，你走的每一步都算數。', '今年辛苦了，明年也會有好事發生。',
+  '願你的煩惱，像雪一樣落地就融化。', '有些溫暖不會說出口，但一直都在。', '你值得一個很溫柔的明年。',
+  '雪花沒有一片是一樣的，你也是。', '想念的人，正在某個地方也想著你。', '今晚的星星，有一顆是為你亮的。',
+  '把今年的遺憾留在這裡，帶著希望走進明年。', '你比自己以為的，更被喜歡。', '每一個平凡的日子，都可能是禮物。',
+  '下雪的時候，記得抬頭看看。', '願你被世界溫柔以待，也溫柔待世界。', '你的存在，本身就是一件很美的事。'
+];
+const flakes = [];
+window.extraLongPress = (x, y) => {
+  if (catchGame.active) return;
+  const arms = [];
+  const n = 2 + (Math.random() * 3 | 0);
+  for (let i = 0; i < n; i++) arms.push({ at: R(0.25, 0.85), len: R(0.15, 0.45), ang: R(0.5, 1.1) });
+  flakes.push({ x, y, r: R(46, 64) * Math.max(0.8, k()), rot: R(0, 1), vr: R(-0.006, 0.006), vy: 0.45, life: 0, arms, tip: Math.random() < 0.5,
+    word: FLAKE_WORDS[Math.random() * FLAKE_WORDS.length | 0] });
+  burst(x, y, '235,248,255', 20, 0.8);
+};
+function drawFlakes() {
+  for (let i = flakes.length - 1; i >= 0; i--) {
+    const f = flakes[i];
+    f.life += 1 / 60; f.y += f.vy; f.rot += f.vr; f.x += Math.sin(f.life * 0.8) * 0.3;
+    const a = cl(Math.min(f.life / 0.6, (9 - f.life) / 1.5), 0, 1);
+    if (f.life > 9) { flakes.splice(i, 1); continue; }
+    ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.rot);
+    ctx.globalAlpha = a; ctx.globalCompositeOperation = 'lighter';
+    ctx.drawImage(sprite(PAL.accent), -f.r * 1.4, -f.r * 1.4, f.r * 2.8, f.r * 2.8);
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = 'rgba(245,252,255,.95)'; ctx.lineCap = 'round'; ctx.shadowColor = `rgb(${PAL.accent})`; ctx.shadowBlur = 10;
+    for (let j = 0; j < 6; j++) {
+      ctx.save(); ctx.rotate(j * Math.PI / 3);
+      ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -f.r); ctx.stroke();
+      ctx.lineWidth = 1.6;
+      for (const b of f.arms) {
+        const y0 = -f.r * b.at, L = f.r * b.len;
+        ctx.beginPath(); ctx.moveTo(0, y0); ctx.lineTo(Math.sin(b.ang) * L, y0 - Math.cos(b.ang) * L);
+        ctx.moveTo(0, y0); ctx.lineTo(-Math.sin(b.ang) * L, y0 - Math.cos(b.ang) * L); ctx.stroke();
+      }
+      if (f.tip) { ctx.beginPath(); ctx.arc(0, -f.r, 3, 0, 7); ctx.stroke(); }
+      ctx.restore();
+    }
+    ctx.restore();
+    ctx.save(); ctx.globalAlpha = a;
+    ctx.font = `300 ${W < 600 ? 13 : 15}px 'Noto Serif TC', serif`; ctx.textAlign = 'center';
+    ctx.fillStyle = '#f4faff'; ctx.shadowColor = `rgba(${PAL.accent},.9)`; ctx.shadowBlur = 10;
+    const tx = cl(f.x, 120, W - 120);
+    ctx.fillText(f.word, tx, f.y + f.r + 26);
+    ctx.restore();
+  }
+}
+
+// =====================================================================
+// ☄ 接流星：30 秒內點越多越好
+// =====================================================================
+const catchGame = { active: false, t0: 0, score: 0, stars: [], last: 0, best: 0, name: '' };
+const hud = document.createElement('div'); hud.id = 'hud'; document.body.appendChild(hud);
+const cdEl = document.createElement('div'); cdEl.id = 'countdown'; document.body.appendChild(cdEl);
+panel('catchEnd', `
+  <div class="t1">Shooting Stars</div>
+  <div class="t2">你接住了</div>
+  <div class="bigscore" id="ceScore">0</div>
+  <div class="note" id="ceBest"></div>
+  <div id="ceNameRow" class="stack" style="margin-top:12px">
+    <input type="text" id="ceName" maxlength="12" placeholder="你的名字（上排行榜用）">
+  </div>
+  <div class="btns"><button class="ghost" id="ceClose">關閉</button><button class="main" id="ceAgain">再玩一次</button></div>
+  <div class="glabel" style="margin-top:14px">今日排行榜</div>
+  <div class="board" id="ceBoard"><div class="note">讀取中……</div></div>
+`);
+$('ceClose').addEventListener('click', () => { saveScore(); close('catchEnd'); });
+$('ceAgain').addEventListener('click', () => { saveScore(); close('catchEnd'); startCatchIntro(); });
+whenDb(async d => { try { const s = await d.doc('scores/' + uid).get(); if (s.exists) { const v = s.data(); catchGame.name = String(v.name || '').slice(0, 12); if (v.day === today()) catchGame.best = Number(v.best) || 0; } } catch (e) {} });
+
+function startCatchIntro() {
+  if (catchGame.active) return;
+  setMode('tree');
+  catchGame.active = true; window.__catching = true; catchGame.score = 0; catchGame.stars = []; catchGame.t0 = performance.now() + 3000;
+  document.querySelector('#bar').classList.remove('on'); $('text').style.opacity = 0;
+  let n = 3; cdEl.style.display = 'flex'; cdEl.textContent = n;
+  const t = setInterval(() => {
+    n--; if (n > 0) cdEl.textContent = n;
+    else { cdEl.textContent = '開始！'; clearInterval(t); setTimeout(() => cdEl.style.display = 'none', 600); }
+  }, 1000);
+  hud.style.display = 'flex';
+}
+function endCatch() {
+  catchGame.active = false; window.__catching = false; hud.style.display = 'none';
+  document.querySelector('#bar').classList.add('on'); $('text').style.opacity = '';
+  const sc = catchGame.score, newBest = sc > catchGame.best;
+  if (newBest) catchGame.best = sc;
+  $('ceScore').textContent = sc + ' 顆';
+  $('ceBest').textContent = newBest ? '✦ 刷新了你今天的最佳紀錄！' : `你今天的最佳紀錄：${catchGame.best} 顆`;
+  $('ceName').value = catchGame.name;
+  $('ceNameRow').style.display = writable() ? '' : 'none';
+  open('catchEnd');
+  catchGame.pending = newBest;
+  if (newBest && catchGame.name) saveScore();
+  loadBoard();
+}
+async function saveScore() {
+  const name = ($('ceName').value || '').trim().slice(0, 12);
+  if (name) catchGame.name = name;
+  if (!writable() || !catchGame.name) return;
+  if (!catchGame.pending && name === catchGame.savedName) return;
+  try {
+    await db.doc('scores/' + uid).set({ name: catchGame.name, best: catchGame.best, day: today(), at: Date.now() });
+    catchGame.pending = false; catchGame.savedName = catchGame.name; loadBoard();
+  } catch (e) { console.log('score', e); }
+}
+$('ceName').addEventListener('change', saveScore);
+async function loadBoard() {
+  const box = $('ceBoard');
+  if (!ready()) { box.innerHTML = '<div class="note">登入後就能上排行榜</div>'; return; }
+  try {
+    const snap = await db.collection('scores').where('day', '==', today()).get();
+    const rows = snap.docs.map(d => ({ id: d.id, ...(d.data() || {}) })).filter(r => typeof r.name === 'string')
+      .map(r => ({ id: r.id, name: r.name.slice(0, 12), best: cl(Number(r.best) || 0, 0, 999) })).sort((a, b) => b.best - a.best).slice(0, 10);
+    box.innerHTML = rows.length ? rows.map((r, i) => `<div class="row${r.id === uid ? ' me' : ''}"><span>${['🥇', '🥈', '🥉'][i] || (i + 1) + '.'} ${esc(r.name)}</span><span>${r.best} 顆</span></div>`).join('')
+      : '<div class="note">今天還沒有人上榜，留下你的名字吧</div>';
+  } catch (e) { box.innerHTML = '<div class="note">排行榜暫時讀不到</div>'; }
+}
+function updateCatch(now) {
+  if (!catchGame.active) return;
+  const left = Math.max(0, 30 - (now - catchGame.t0) / 1000);
+  hud.innerHTML = `<span>☄ ${catchGame.score}</span><span>⏱ ${Math.ceil(Math.min(30, left))}</span>`;
+  if (now > catchGame.t0 && now - catchGame.last > R(260, 600) && left > 0.3) {
+    catchGame.last = now;
+    const gold = Math.random() < 0.12, sp = (H / 800) * (gold ? R(5, 7) : R(2.6, 4.6)) * (1 + (30 - left) / 60);
+    const ang = R(-0.5, 0.5);
+    catchGame.stars.push({ x: R(0.08, 0.92) * W, y: -20, vx: Math.sin(ang) * sp, vy: Math.cos(ang) * sp, gold, trail: [] });
+  }
+  for (let i = catchGame.stars.length - 1; i >= 0; i--) {
+    const s = catchGame.stars[i];
+    s.x += s.vx; s.y += s.vy; s.trail.push([s.x, s.y]); if (s.trail.length > 14) s.trail.shift();
+    if (s.y > H + 30) { catchGame.stars.splice(i, 1); continue; }
+    const col = s.gold ? '255,220,130' : PAL.accent2;
+    ctx.globalCompositeOperation = 'lighter';
+    for (let j = 1; j < s.trail.length; j++) {
+      const a = j / s.trail.length;
+      ctx.strokeStyle = `rgba(${col},${a * 0.7})`; ctx.lineWidth = a * (s.gold ? 6 : 4);
+      ctx.beginPath(); ctx.moveTo(s.trail[j - 1][0], s.trail[j - 1][1]); ctx.lineTo(s.trail[j][0], s.trail[j][1]); ctx.stroke();
+    }
+    const r = s.gold ? 26 : 18; ctx.globalAlpha = 1;
+    ctx.drawImage(sprite(col), s.x - r, s.y - r, r * 2, r * 2);
+  }
+  ctx.globalCompositeOperation = 'source-over';
+  if (left <= 0 && now > catchGame.t0) endCatch();
+}
+window.extraPointerDown = (x, y) => {
+  if (!catchGame.active) return false;
+  let hit = -1, best = 1e9;
+  catchGame.stars.forEach((s, i) => { const d = Math.hypot(s.x - x, s.y - y); if (d < 48 && d < best) { best = d; hit = i; } });
+  if (hit >= 0) {
+    const s = catchGame.stars.splice(hit, 1)[0];
+    catchGame.score += s.gold ? 3 : 1;
+    burst(s.x, s.y, s.gold ? '255,220,130' : PAL.accent2, s.gold ? 40 : 18, s.gold ? 1.3 : 0.8);
+    const o = ORN[Math.random() * ORN.length | 0];
+    launchMeteor(() => proj(o.x, o.y, o.z), () => { const p = proj(o.x, o.y, o.z); burst(p.x, p.y, o.col, 8, 0.5); }, 0, { sx: s.x, sy: s.y, dur: 700, curve: 0.2, small: true });
+  }
+  return true;
+};
+
+// =====================================================================
+// 樹上的手作吊飾（自己畫的、或照片做的）
+// =====================================================================
+let seed2 = 1225;
+const srand2 = () => { seed2 |= 0; seed2 = seed2 + 0x6D2B79F5 | 0; let t = Math.imul(seed2 ^ seed2 >>> 15, 1 | seed2); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const DECO_SPOTS = [];
+for (let i = 0; i < 80; i++) {
+  const h = 0.12 + 0.78 * ((i * 0.618034) % 1);
+  const a = i * 2.39996 + 1.2 + srand2() * 0.3, r = (1 - h) * 1.0;
+  DECO_SPOTS.push({ x: Math.cos(a) * r, y: 1.05 - h * 2.1, z: Math.sin(a) * r });
+}
+const decoImgs = new Map();         // key → Image
+let decoList = [];
+let decoMap = new Map();
+const decos = collect('decos', m => {
+  decoMap = m;
+  const all = [];
+  for (const [id, d] of m) (Array.isArray(d.list) ? d.list : []).slice(-3).forEach((it, j) => {
+    if (it && okImg(it.img)) all.push({ key: id + ':' + j + ':' + (Number(it.at) || 0), img: it.img, at: Number(it.at) || 0, mine: id === uid, kind: it.kind === 'photo' ? 'photo' : 'draw', owner: id });
+  });
+  all.sort((a, b) => a.at - b.at);
+  decoList = all.slice(-80);
+  for (const d of decoList) if (!decoImgs.has(d.key)) { const im = new Image(); im.src = d.img; decoImgs.set(d.key, im); }
+});
+const localDecos = [];              // 沒有登入時，只掛在自己的畫面
+async function hangDeco(img, kind) {
+  const it = { img, kind, at: Date.now() };
+  if (writable()) {
+    try {
+      const cur = await db.doc('decos/' + uid).get();
+      const list = cur.exists && Array.isArray(cur.data().list) ? cur.data().list.filter(x => x && okImg(x.img)) : [];
+      await db.doc('decos/' + uid).set({ list: [...list, it].slice(-3) });
+      toast('你的吊飾掛上樹了 ✦<br><span style="opacity:.7;font-size:12px">每個人最多可以掛 3 個，新的會換掉最舊的</span>', 4000);
+      return;
+    } catch (e) { console.log('deco', e); }
+  }
+  const im = new Image(); im.src = img; localDecos.push({ key: 'local' + Date.now(), img, at: Date.now(), mine: true, kind, local: true });
+  decoImgs.set(localDecos[localDecos.length - 1].key, im);
+  toast('吊飾掛在你的樹上了 ✦', 3000);
+}
+let decoHits = [], smHits = [];
+function drawDecos(time) {
+  decoHits = [];
+  if (w.tree < 0.05) return;
+  const list = [...decoList, ...localDecos].slice(-80);
+  const items = list.map((d, i) => ({ d, q: proj(DECO_SPOTS[i].x, DECO_SPOTS[i].y, DECO_SPOTS[i].z) })).sort((a, b) => b.q.rz - a.q.rz);
+  for (const { d, q } of items) {
+    const im = decoImgs.get(d.key); if (!im || !im.complete || !im.naturalWidth) continue;
+    const back = q.rz > 0 ? 0.4 : 1, r = 13 * q.f * k() * (d.mine ? 1.15 : 1);
+    const sway = Math.sin(time * 1.5 + q.x * 0.01) * 0.15;
+    ctx.save(); ctx.globalAlpha = w.tree * back;
+    ctx.translate(q.x, q.y - r * 0.4); ctx.rotate(sway);
+    ctx.strokeStyle = 'rgba(230,240,255,.6)'; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(0, -r * 1.7); ctx.lineTo(0, -r); ctx.stroke();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.drawImage(sprite(d.mine ? '255,236,190' : PAL.accent), -r * 2, -r * 1.6, r * 4, r * 4);
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.save(); ctx.beginPath(); ctx.arc(0, r * 0.4, r, 0, 7); ctx.clip();
+    ctx.drawImage(im, -r, -r * 0.6, r * 2, r * 2); ctx.restore();
+    ctx.strokeStyle = d.mine ? 'rgba(255,236,190,.95)' : 'rgba(235,245,255,.85)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(0, r * 0.4, r, 0, 7); ctx.stroke();
+    ctx.restore();
+    if (back === 1) decoHits.push({ x: q.x, y: q.y, r: Math.max(r, 14), d });
+  }
+}
+
+// =====================================================================
+// ✎ 畫裝飾
+// =====================================================================
+panel('draw', `
+  <div class="t1">Make an Ornament</div>
+  <div class="t2">畫一個小吊飾，掛到樹上</div>
+  <canvas class="pad" id="pad" width="440" height="440" style="width:220px;height:220px"></canvas>
+  <div class="chips" id="swatches" style="margin-top:12px"></div>
+  <div class="chips" id="brushes"></div>
+  <div class="btns"><button class="ghost" id="dClear">清除重畫</button><button class="main" id="dHang">✦ 掛上樹</button></div>
+  <div class="btns" style="margin-top:8px"><button class="ghost" id="dClose">關閉</button></div>
+  <div class="note">掛上去的吊飾，所有打開這棵樹的人都看得到</div>
+`);
+const pad = $('pad'), pctx = pad.getContext('2d');
+const COLORS = ['#ffffff', '#ff8fb5', '#ffd36e', '#7fe0ff', '#9dff9d', '#c7a6ff', '#ff6b6b', '#1b3352'];
+let penColor = COLORS[0], penSize = 14, drawing = null, padDirty = false;
+const sw = $('swatches');
+COLORS.forEach((c, i) => {
+  const b = document.createElement('div'); b.className = 'swatch' + (i === 0 ? ' on' : ''); b.style.background = c;
+  if (c === '#1b3352') { b.title = '橡皮擦'; b.style.boxShadow = 'inset 0 0 0 1px rgba(255,255,255,.4)'; b.textContent = ''; }
+  b.addEventListener('click', () => { penColor = c; [...sw.children].forEach(x => x.classList.remove('on')); b.classList.add('on'); });
+  sw.appendChild(b);
+});
+chips($('brushes'), ['細', '中', '粗'], 1, i => penSize = [6, 14, 28][i]);
+function padClear() {
+  pctx.clearRect(0, 0, 440, 440);
+  const g = pctx.createRadialGradient(150, 130, 10, 220, 220, 220);
+  g.addColorStop(0, '#24446b'); g.addColorStop(1, '#0a1730');
+  pctx.fillStyle = g; pctx.beginPath(); pctx.arc(220, 220, 220, 0, 7); pctx.fill();
+  padDirty = false;
+}
+padClear();
+const padPt = e => { const r = pad.getBoundingClientRect(); return [(e.clientX - r.left) * 440 / r.width, (e.clientY - r.top) * 440 / r.height]; };
+pad.addEventListener('pointerdown', e => { pad.setPointerCapture(e.pointerId); drawing = padPt(e); pctx.fillStyle = penColor; pctx.beginPath(); pctx.arc(drawing[0], drawing[1], penSize / 2, 0, 7); pctx.fill(); padDirty = true; });
+pad.addEventListener('pointermove', e => {
+  if (!drawing) return;
+  const p = padPt(e);
+  pctx.save(); pctx.beginPath(); pctx.arc(220, 220, 220, 0, 7); pctx.clip();
+  pctx.strokeStyle = penColor; pctx.lineWidth = penSize; pctx.lineCap = 'round'; pctx.lineJoin = 'round';
+  pctx.beginPath(); pctx.moveTo(drawing[0], drawing[1]); pctx.lineTo(p[0], p[1]); pctx.stroke(); pctx.restore();
+  drawing = p;
+});
+['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => pad.addEventListener(ev, () => drawing = null));
+$('dClear').addEventListener('click', padClear);
+$('dClose').addEventListener('click', () => close('draw'));
+function toOrnament(src, sx, sy, sSize, type) {
+  const c = document.createElement('canvas'); c.width = c.height = 200;
+  const x = c.getContext('2d');
+  x.beginPath(); x.arc(100, 100, 100, 0, 7); x.clip();
+  x.drawImage(src, sx, sy, sSize, sSize, 0, 0, 200, 200);
+  return c.toDataURL(type, 0.82);
+}
+$('dHang').addEventListener('click', () => {
+  if (!padDirty) { toast('先畫點什麼吧 ✎', 2000); return; }
+  hangDeco(toOrnament(pad, 0, 0, 440, 'image/png'), 'draw');
+  close('draw'); padClear();
+});
+function openDraw() { open('draw'); }
+
+// =====================================================================
+// 📷 聖誕合照
+// =====================================================================
+panel('photo', `
+  <div class="t1">Christmas Photo</div>
+  <div class="t2">拍一張，或選一張照片</div>
+  <div id="phPick" class="btns" style="margin-top:0">
+    <label class="ghost" style="flex:1;padding:11px 0;border-radius:999px;cursor:pointer;font-family:'Noto Serif TC',serif;font-size:14px;letter-spacing:.15em">📷 拍照<input type="file" accept="image/*" capture="user" id="phCam" hidden></label>
+    <label class="main" style="flex:1;padding:11px 0;border-radius:999px;cursor:pointer;font-family:'Noto Serif TC',serif;font-size:14px;letter-spacing:.15em">🖼 上傳照片<input type="file" accept="image/*" id="phFile" hidden></label>
+  </div>
+  <div id="phOut" class="hidden">
+    <img class="result-img" id="phImg" alt="聖誕合照">
+    <div class="note">手機可以長按圖片存到相簿</div>
+    <div class="btns"><button class="ghost" id="phAgain">換一張</button><button class="main" id="phSave">⬇ 存下來</button></div>
+    <div class="btns" style="margin-top:8px"><button class="ghost" id="phHang">✦ 把照片做成樹上的吊飾</button></div>
+    <div class="note">做成吊飾後，所有打開這棵樹的人都看得到這張照片</div>
+  </div>
+  <div class="btns" style="margin-top:8px"><button class="ghost" id="phClose">關閉</button></div>
+`);
+let phSrc = null, phBlob = null, downloads = null;
+(async () => {
+  for (let i = 0; i < 60 && !(window.claude && window.claude.use); i++) await new Promise(r => setTimeout(r, 100));
+  try { downloads = window.claude && await window.claude.use('downloads'); } catch (e) {}
+})();
+function openPhoto() { $('phOut').classList.add('hidden'); $('phPick').classList.remove('hidden'); open('photo'); }
+$('phClose').addEventListener('click', () => close('photo'));
+$('phAgain').addEventListener('click', openPhoto);
+['phCam', 'phFile'].forEach(id => $(id).addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  const im = new Image();
+  im.onload = async () => { phSrc = im; await makeCard(im); URL.revokeObjectURL(im.src); };
+  im.onerror = () => toast('這張照片打不開，換一張試試', 2500);
+  im.src = URL.createObjectURL(f);
+}));
+async function makeCard(im) {
+  try { await document.fonts.load("80px 'Great Vibes'"); await document.fonts.load("30px 'Noto Serif TC'"); } catch (e) {}
+  const Wc = 1080, Hc = 1350, c = document.createElement('canvas'); c.width = Wc; c.height = Hc;
+  const x = c.getContext('2d');
+  const bg = x.createLinearGradient(0, 0, 0, Hc); bg.addColorStop(0, PAL.bg[0]); bg.addColorStop(1, '#02050c');
+  x.fillStyle = bg; x.fillRect(0, 0, Wc, Hc);
+  for (let i = 0; i < 260; i++) { x.globalAlpha = Math.random() * 0.8; x.fillStyle = '#fff'; x.beginPath(); x.arc(Math.random() * Wc, Math.random() * Hc, Math.random() * 2.6, 0, 7); x.fill(); }
+  x.globalAlpha = 1;
+  // 照片（圓角、置中裁切）
+  const px = 90, py = 110, pw = 900, ph = 900, rr = 36;
+  const sc = Math.max(pw / im.naturalWidth, ph / im.naturalHeight), iw = im.naturalWidth * sc, ih = im.naturalHeight * sc;
+  x.save(); x.shadowColor = `rgba(${PAL.accent},.8)`; x.shadowBlur = 50;
+  x.beginPath(); x.roundRect ? x.roundRect(px, py, pw, ph, rr) : x.rect(px, py, pw, ph); x.fillStyle = '#000'; x.fill(); x.restore();
+  x.save(); x.beginPath(); x.roundRect ? x.roundRect(px, py, pw, ph, rr) : x.rect(px, py, pw, ph); x.clip();
+  x.drawImage(im, px + (pw - iw) / 2, py + (ph - ih) / 2, iw, ih); x.restore();
+  x.strokeStyle = `rgba(${PAL.accent2},.9)`; x.lineWidth = 4; x.beginPath(); x.roundRect ? x.roundRect(px, py, pw, ph, rr) : x.rect(px, py, pw, ph); x.stroke();
+  // 角落的發光小樹
+  const tx = 930, ty = 1010;
+  x.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < 420; i++) {
+    const h = Math.random(), rr2 = (1 - h) * 95 * Math.sqrt(Math.random()), a = Math.random() * 7;
+    const col = PAL.tree[i % PAL.tree.length];
+    x.fillStyle = `rgba(${col},${0.5 + Math.random() * 0.5})`;
+    x.beginPath(); x.arc(tx + Math.cos(a) * rr2, ty - h * 230 + Math.sin(a) * rr2 * 0.15, Math.random() * 3 + 1, 0, 7); x.fill();
+  }
+  x.drawImage(sprite(PAL.accent2), tx - 40, ty - 270, 80, 80);
+  x.globalCompositeOperation = 'source-over';
+  x.fillStyle = '#fffbe8'; x.font = '40px serif'; x.textAlign = 'center'; x.fillText('★', tx, ty - 218);
+  // 文字
+  x.textAlign = 'center'; x.fillStyle = '#f2faff'; x.shadowColor = `rgba(${PAL.accent},1)`; x.shadowBlur = 24;
+  x.font = "120px 'Great Vibes', cursive"; x.fillText('Merry Christmas', 470, 1150);
+  x.shadowBlur = 10; x.font = "300 34px 'Noto Serif TC', serif";
+  const y = new Date(Date.now() + 8 * 3600e3).getUTCFullYear();
+  x.fillText(`${y} ✦ 我們一起點亮的聖誕樹`, 470, 1235);
+  // 雪花
+  x.shadowBlur = 0;
+  for (let i = 0; i < 26; i++) { x.globalAlpha = 0.85; x.font = `${18 + Math.random() * 26}px serif`; x.fillText('❄', Math.random() * Wc, Math.random() < 0.5 ? Math.random() * 100 + 10 : 1020 + Math.random() * 320); }
+  x.globalAlpha = 1;
+  const url = c.toDataURL('image/jpeg', 0.9);
+  $('phImg').src = url;
+  phBlob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.9));
+  $('phPick').classList.add('hidden'); $('phOut').classList.remove('hidden');
+  $('phSave').style.display = downloads ? '' : 'none';
+}
+$('phSave').addEventListener('click', async () => {
+  if (!downloads || !phBlob) return;
+  try { await downloads.save({ filename: 'merry-christmas.jpg', data: phBlob }); }
+  catch (e) { toast('沒有存成功，可以長按圖片存下來', 2500); }
+});
+$('phHang').addEventListener('click', () => {
+  if (!phSrc) return;
+  const s = Math.min(phSrc.naturalWidth, phSrc.naturalHeight);
+  hangDeco(toOrnament(phSrc, (phSrc.naturalWidth - s) / 2, (phSrc.naturalHeight - s) / 2, s, 'image/jpeg'), 'photo');
+  close('photo');
+});
+
+// =====================================================================
+// ☃ 堆雪人
+// =====================================================================
+const HATS = ['不戴', '毛線帽', '紳士帽', '聖誕帽'], SCARVES = ['不圍', '紅', '藍', '綠', '粉'], SCARF_C = [null, '#e0405a', '#4a8cff', '#3fbf7f', '#ff8fc0'];
+const NOSES = ['紅蘿蔔', '小圓鼻'], FACES = ['微笑', '大笑', '眨眼', '害羞'], ARMS = ['樹枝', '手套', '不要手'], BTNS = ['沒有', '1 顆', '2 顆', '3 顆'];
+function drawSnowman(c, x, y, s, cfg, t = 0, label) {
+  const r = (cfg.r || [60, 46, 34]).map(v => cl(Number(v) || 30, 14, 80) * s);
+  const c0 = y - r[0], c1 = c0 - (r[0] + r[1]) * 0.8, c2 = c1 - (r[1] + r[2]) * 0.8;
+  const ball = (cy, rr) => {
+    const g = c.createRadialGradient(x - rr * 0.35, cy - rr * 0.4, rr * 0.1, x, cy, rr);
+    g.addColorStop(0, '#ffffff'); g.addColorStop(0.7, '#e3eefa'); g.addColorStop(1, '#a9c3dd');
+    c.fillStyle = g; c.beginPath(); c.arc(x, cy, rr, 0, 7); c.fill();
+  };
+  // 手
+  const arm = cfg.arm | 0;
+  if (arm !== 2) {
+    c.strokeStyle = '#6b4526'; c.lineWidth = Math.max(1.5, 3 * s); c.lineCap = 'round';
+    [-1, 1].forEach(d => {
+      const wave = d === 1 ? Math.sin(t * 3) * 0.25 : 0;
+      const sx = x + d * r[1] * 0.8, sy = c1 - r[1] * 0.1, ex = sx + d * r[1] * 1.1, ey = sy - r[1] * (0.5 + wave);
+      c.beginPath(); c.moveTo(sx, sy); c.lineTo(ex, ey);
+      if (arm === 0) { c.moveTo(sx + (ex - sx) * 0.7, sy + (ey - sy) * 0.7); c.lineTo(ex + d * 2 * s, ey - r[1] * 0.35); }
+      c.stroke();
+      if (arm === 1) { c.fillStyle = SCARF_C[cfg.scarf | 0] || '#e0405a'; c.beginPath(); c.arc(ex, ey, Math.max(2, r[2] * 0.22), 0, 7); c.fill(); }
+    });
+  }
+  ball(c0, r[0]); ball(c1, r[1]); ball(c2, r[2]);
+  // 鈕扣
+  c.fillStyle = '#26303d';
+  for (let i = 0; i < (cfg.btn | 0); i++) { c.beginPath(); c.arc(x, c1 - r[1] * 0.35 + i * r[1] * 0.38, Math.max(1.2, r[1] * 0.08), 0, 7); c.fill(); }
+  // 圍巾
+  const sc = SCARF_C[cfg.scarf | 0];
+  if (sc) {
+    c.fillStyle = sc; const yy = c2 + r[2] * 0.82;
+    c.beginPath(); c.ellipse(x, yy, r[2] * 0.95, r[2] * 0.2, 0, 0, 7); c.fill();
+    c.beginPath(); c.moveTo(x + r[2] * 0.3, yy); c.lineTo(x + r[2] * 0.6 + Math.sin(t * 2) * 2 * s, yy + r[2] * 0.9); c.lineTo(x + r[2] * 0.25 + Math.sin(t * 2) * 2 * s, yy + r[2] * 0.95); c.lineTo(x + r[2] * 0.05, yy); c.fill();
+  }
+  // 臉
+  const face = cfg.face | 0, er = Math.max(1.2, r[2] * 0.09);
+  c.fillStyle = '#1d2530'; c.strokeStyle = '#1d2530'; c.lineWidth = Math.max(1, r[2] * 0.07); c.lineCap = 'round';
+  c.beginPath(); c.arc(x - r[2] * 0.33, c2 - r[2] * 0.15, er, 0, 7); c.fill();
+  if (face === 2) { c.beginPath(); c.moveTo(x + r[2] * 0.22, c2 - r[2] * 0.15); c.lineTo(x + r[2] * 0.44, c2 - r[2] * 0.15); c.stroke(); }
+  else { c.beginPath(); c.arc(x + r[2] * 0.33, c2 - r[2] * 0.15, er, 0, 7); c.fill(); }
+  if (face === 1) { c.beginPath(); c.arc(x, c2 + r[2] * 0.25, r[2] * 0.3, 0, Math.PI); c.fill(); }
+  else { c.beginPath(); c.arc(x, c2 + r[2] * 0.12, r[2] * (face === 3 ? 0.18 : 0.32), 0.25 * Math.PI, 0.75 * Math.PI); c.stroke(); }
+  if (face === 3) { c.fillStyle = 'rgba(255,130,160,.6)'; [-1, 1].forEach(d => { c.beginPath(); c.ellipse(x + d * r[2] * 0.5, c2 + r[2] * 0.15, r[2] * 0.16, r[2] * 0.09, 0, 0, 7); c.fill(); }); }
+  // 鼻子
+  c.fillStyle = '#ff8a2a';
+  if ((cfg.nose | 0) === 0) { c.beginPath(); c.moveTo(x, c2 - r[2] * 0.05); c.lineTo(x + r[2] * 0.6, c2 + r[2] * 0.05); c.lineTo(x, c2 + r[2] * 0.12); c.fill(); }
+  else { c.beginPath(); c.arc(x, c2 + r[2] * 0.02, r[2] * 0.12, 0, 7); c.fill(); }
+  // 帽子
+  const hat = cfg.hat | 0, top = c2 - r[2] * 0.75;
+  if (hat === 1) {
+    c.fillStyle = SCARF_C[cfg.scarf | 0] || '#4a8cff';
+    c.beginPath(); c.arc(x, top + r[2] * 0.15, r[2] * 0.72, Math.PI, 0); c.fill();
+    c.fillStyle = '#fff'; c.fillRect(x - r[2] * 0.75, top + r[2] * 0.08, r[2] * 1.5, r[2] * 0.2);
+    c.beginPath(); c.arc(x, top - r[2] * 0.6, r[2] * 0.2, 0, 7); c.fill();
+  } else if (hat === 2) {
+    c.fillStyle = '#1c1f26'; c.fillRect(x - r[2] * 0.85, top + r[2] * 0.05, r[2] * 1.7, r[2] * 0.15);
+    c.fillRect(x - r[2] * 0.55, top - r[2] * 0.9, r[2] * 1.1, r[2] * 1.0);
+    c.fillStyle = '#c23a4e'; c.fillRect(x - r[2] * 0.55, top - r[2] * 0.12, r[2] * 1.1, r[2] * 0.16);
+  } else if (hat === 3) {
+    c.fillStyle = '#d6334a';
+    c.beginPath(); c.moveTo(x - r[2] * 0.7, top + r[2] * 0.15); c.quadraticCurveTo(x, top - r[2] * 1.5, x + r[2] * 0.95, top - r[2] * 0.5); c.lineTo(x + r[2] * 0.7, top + r[2] * 0.15); c.fill();
+    c.fillStyle = '#fff'; c.beginPath(); c.ellipse(x, top + r[2] * 0.15, r[2] * 0.78, r[2] * 0.16, 0, 0, 7); c.fill();
+    c.beginPath(); c.arc(x + r[2] * 0.95, top - r[2] * 0.5, r[2] * 0.17, 0, 7); c.fill();
+  }
+  if (label) {
+    c.font = `300 ${Math.max(10, 12 * Math.min(1.2, s * 2.2))}px 'Noto Serif TC', serif`; c.textAlign = 'center';
+    c.fillStyle = 'rgba(240,248,255,.85)'; c.fillText(label, x, y + 14 * Math.max(0.8, s * 2));
+  }
+}
+const SM_DEFAULT = () => ({ r: [0, 0, 0], hat: 3, scarf: 1, nose: 0, face: 0, arm: 0, btn: 3 });
+let sm = SM_DEFAULT(), smStep = 0, smBall = 0, smGrow = false, smName = '';
+panel('snow', `
+  <div class="t1">Snowman</div>
+  <div class="t2" id="smTitle">按住按鈕滾雪球，放開就完成一顆</div>
+  <canvas id="smCv" width="520" height="560" style="width:200px;height:215px;display:block;margin:0 auto;border-radius:16px;background:linear-gradient(180deg,rgba(10,30,60,.5),rgba(200,225,250,.12))"></canvas>
+  <div id="smRoll">
+    <div class="btns"><button class="ghost" id="smRedo">重新堆</button><button class="main" id="smHold" style="touch-action:none">❄ 按住滾雪球</button></div>
+  </div>
+  <div id="smDeco" class="hidden">
+    <div class="glabel">帽子</div><div class="chips" id="smHat"></div>
+    <div class="glabel">圍巾</div><div class="chips" id="smScarf"></div>
+    <div class="glabel">表情</div><div class="chips" id="smFace"></div>
+    <div class="glabel">鼻子</div><div class="chips" id="smNose"></div>
+    <div class="glabel">手</div><div class="chips" id="smArm"></div>
+    <div class="glabel">鈕扣</div><div class="chips" id="smBtn"></div>
+    <input type="text" id="smName" maxlength="10" placeholder="幫雪人取個名字" style="margin-top:6px">
+    <div class="btns"><button class="ghost" id="smBack">重新堆</button><button class="main" id="smDone">☃ 放到樹下</button></div>
+  </div>
+  <div class="btns" style="margin-top:8px"><button class="ghost" id="smClose">關閉</button></div>
+  <div class="note">堆好的雪人會站在樹下，大家都看得到</div>
+`);
+const smCv = $('smCv'), smCtx = smCv.getContext('2d');
+const MAXR = [78, 62, 48];
+function smReset() {
+  sm = SM_DEFAULT(); smBall = 0; smStep = 0;
+  $('smRoll').classList.remove('hidden'); $('smDeco').classList.add('hidden');
+  $('smTitle').textContent = '按住按鈕滾雪球，放開就完成一顆（共 3 顆）';
+}
+function smBuildChips() {
+  chips($('smHat'), HATS, sm.hat, i => sm.hat = i); chips($('smScarf'), SCARVES, sm.scarf, i => sm.scarf = i);
+  chips($('smFace'), FACES, sm.face, i => sm.face = i); chips($('smNose'), NOSES, sm.nose, i => sm.nose = i);
+  chips($('smArm'), ARMS, sm.arm, i => sm.arm = i); chips($('smBtn'), BTNS, sm.btn, i => sm.btn = i);
+}
+const holdStart = e => { e.preventDefault(); if (smStep === 0 && smBall < 3) { smGrow = true; if (!sm.r[smBall]) sm.r[smBall] = 10; } };
+const holdEnd = () => {
+  if (!smGrow) return; smGrow = false;
+  if (sm.r[smBall] < 18) { sm.r[smBall] = 0; toast('雪球太小了，按久一點 ❄', 1600); return; }
+  smBall++;
+  const tips = ['', '很好！再滾一顆比較小的當身體', '最後一顆，當雪人的頭'];
+  if (smBall < 3) $('smTitle').textContent = tips[smBall];
+  else {
+    smStep = 1; $('smRoll').classList.add('hidden'); $('smDeco').classList.remove('hidden');
+    $('smTitle').textContent = '幫雪人打扮一下吧'; smBuildChips();
+  }
+};
+$('smHold').addEventListener('pointerdown', holdStart);
+['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => $('smHold').addEventListener(ev, holdEnd));
+$('smRedo').addEventListener('click', smReset); $('smBack').addEventListener('click', smReset);
+$('smClose').addEventListener('click', () => close('snow'));
+function openSnowman() { smReset(); $('smName').value = smName; open('snow'); smLoop(); }
+let smRunning = false;
+function smLoop() {
+  if (smRunning) return; smRunning = true;
+  const tick = () => {
+    if ($('snow').classList.contains('hide')) { smRunning = false; return; }
+    const t = performance.now() / 1000;
+    if (smGrow) {
+      const cap = smBall === 0 ? MAXR[0] : Math.min(MAXR[smBall], sm.r[smBall - 1] * 0.92);
+      sm.r[smBall] = Math.min(cap, sm.r[smBall] + 0.7);
+    }
+    smCtx.clearRect(0, 0, 520, 560);
+    smCtx.fillStyle = 'rgba(235,245,255,.9)'; smCtx.beginPath(); smCtx.ellipse(260, 520, 220, 26, 0, 0, 7); smCtx.fill();
+    for (let i = 0; i < 40; i++) { smCtx.fillStyle = 'rgba(255,255,255,.5)'; smCtx.beginPath(); smCtx.arc((i * 97 + t * 20 * (i % 3 + 1)) % 520, (i * 53 + t * 30 * (i % 4 + 1)) % 500, 2, 0, 7); smCtx.fill(); }
+    if (smStep === 0) {
+      let y = 515;
+      for (let i = 0; i <= Math.min(smBall, 2); i++) {
+        const rr = sm.r[i] * 2; if (!rr) break;
+        const wob = (i === smBall && smGrow) ? Math.sin(t * 20) * 2 : 0;
+        const cy = y - rr;
+        const g = smCtx.createRadialGradient(260 - rr * 0.35 + wob, cy - rr * 0.4, rr * 0.1, 260 + wob, cy, rr);
+        g.addColorStop(0, '#fff'); g.addColorStop(0.7, '#e3eefa'); g.addColorStop(1, '#a9c3dd');
+        smCtx.fillStyle = g; smCtx.beginPath(); smCtx.arc(260 + wob, cy, rr, 0, 7); smCtx.fill();
+        y = cy - rr * 0.6;
+      }
+    } else drawSnowman(smCtx, 260, 515, 2, sm, t);
+    requestAnimationFrame(tick);
+  };
+  tick();
+}
+let snowmen = [];
+const cleanSM = d => ({
+  r: (Array.isArray(d.cfg && d.cfg.r) ? d.cfg.r : [60, 46, 34]).slice(0, 3).map(v => cl(Number(v) || 30, 14, 80)),
+  hat: cl(d.cfg && d.cfg.hat | 0, 0, 3), scarf: cl(d.cfg && d.cfg.scarf | 0, 0, 4), nose: cl(d.cfg && d.cfg.nose | 0, 0, 1),
+  face: cl(d.cfg && d.cfg.face | 0, 0, 3), arm: cl(d.cfg && d.cfg.arm | 0, 0, 2), btn: cl(d.cfg && d.cfg.btn | 0, 0, 3)
+});
+let smMap = new Map();
+collect('snowmen', m => {
+  smMap = m;
+  snowmen = [...m.entries()].filter(([, d]) => d && d.cfg).map(([id, d]) => ({ id, cfg: cleanSM(d), name: String(d.name || '').slice(0, 10), at: Number(d.at) || 0 }))
+    .sort((a, b) => a.at - b.at).slice(-14);
+});
+whenDb(async d => { try { const s = await d.doc('snowmen/' + uid).get(); if (s.exists) smName = String(s.data().name || '').slice(0, 10); } catch (e) {} });
+$('smDone').addEventListener('click', async () => {
+  smName = $('smName').value.trim().slice(0, 10);
+  const doc = { cfg: { ...sm, r: sm.r.map(v => Math.round(v)) }, name: smName, at: Date.now() };
+  close('snow');
+  if (writable()) {
+    try { await db.doc('snowmen/' + uid).set(doc); toast(`☃ ${esc(smName || '你的雪人')}站到樹下了！`, 3000); return; } catch (e) { console.log(e); }
+  }
+  snowmen = [...snowmen.filter(s => s.id !== 'me-local'), { id: 'me-local', cfg: cleanSM(doc), name: smName, at: Date.now() }].slice(-14);
+  toast('☃ 雪人站到你的樹下了！', 3000);
+});
+function drawSnowmen(time) {
+  smHits = [];
+  if (w.tree < 0.05 || !snowmen.length) return;
+  const n = snowmen.length;
+  const items = snowmen.map((s, i) => {
+    const a = (i + 0.5) / n * Math.PI * 2 + 0.4, rr = W < 600 ? 0.92 : 1.15;
+    return { s, q: proj(Math.cos(a) * rr, 1.04, Math.sin(a) * rr * 0.45) };
+  }).sort((a, b) => b.q.rz - a.q.rz);
+  for (const { s, q } of items) {
+    ctx.save();
+    ctx.globalAlpha = w.tree * (q.rz > 0.3 ? 0.45 : 1);
+    const sc = 0.2 * q.f * q.f * Math.min(k(), 0.72);
+    drawSnowman(ctx, q.x, q.y, sc, s.cfg, time + s.at % 7, s.name || '');
+    ctx.restore();
+    if (q.rz <= 0.3) {
+      const r = s.cfg.r, hgt = (r[0] * 2 + (r[0] + r[1]) * 0.8 + (r[1] + r[2]) * 0.8 + r[2] * 1.8) * sc;
+      smHits.push({ x: q.x, y0: q.y - hgt, y1: q.y + 16, hw: Math.max(r[0] * sc * 1.3, 18), s });
+    }
+  }
+}
+
+// =====================================================================
+// ❄ 年度回顧牆：今年最開心的一件事
+// =====================================================================
+panel('memory', `
+  <div class="t1">This Year</div>
+  <div class="t2">今年最開心的一件事是什麼？</div>
+  <input type="text" id="memText" maxlength="40" placeholder="例如：終於學會游泳了">
+  <div class="btns"><button class="ghost" id="memClose">關閉</button><button class="main" id="memGo">❄ 讓它飄下來</button></div>
+  <div class="note">寫下的事會變成雪花落在樹下，大家都看得到</div>
+  <div class="glabel" style="margin-top:14px">大家今年最開心的事</div>
+  <div class="memlist" id="memList"></div>
+`);
+let memPool = [], myMem = [];
+const memories = collect('memories', m => {
+  memPool = [];
+  for (const [id, d] of m) {
+    const list = (Array.isArray(d.list) ? d.list : []).filter(x => x && typeof x.t === 'string').slice(-3).map(x => ({ t: x.t.slice(0, 40), at: Number(x.at) || 0, owner: id }));
+    if (id === uid) myMem = list.map(({ t, at }) => ({ t, at }));
+    memPool.push(...list);
+  }
+  memPool.sort((a, b) => b.at - a.at);
+  renderMem();
+});
+function renderMem() {
+  $('memList').innerHTML = memPool.length ? memPool.slice(0, 40).map(m => `<div>${esc(m.t)}</div>`).join('') : '<div class="note" style="text-align:center">還沒有人寫，當第一個吧</div>';
+}
+function openMemory() { $('memText').value = ''; renderMem(); open('memory'); }
+$('memClose').addEventListener('click', () => close('memory'));
+$('memGo').addEventListener('click', async () => {
+  const t = $('memText').value.trim().slice(0, 40);
+  if (!t) return;
+  close('memory');
+  const at = Date.now();
+  spawnMemFlake(t, true, uid || 'local', at);
+  if (writable()) {
+    try { myMem = [...myMem.slice(-2), { t, at }]; await db.doc('memories/' + uid).set({ list: myMem }); return; } catch (e) {}
+  }
+  memPool.unshift({ t, at, owner: 'local' });
+});
+const memFlakes = [];
+let landed = 0;
+function spawnMemFlake(t, mine, owner, at) {
+  memFlakes.push({ t, mine, owner, at, x: R(0.15, 0.85) * W, sx: 0, y: -20, vy: R(0.5, 0.75), life: 0, ph: Math.random() * 6 });
+}
+let memIdx = 0;
+setInterval(() => {
+  if (!started || catchGame.active || !memPool.length || document.hidden || memFlakes.length > 1 || mode !== 'tree') return;
+  const m = memPool[memIdx++ % memPool.length];
+  spawnMemFlake(m.t, m.owner === uid || m.owner === 'local', m.owner, m.at);
+}, 7000);
+function drawMemFlakes() {
+  ctx.font = `300 ${W < 600 ? 12 : 14}px 'Noto Serif TC', serif`; ctx.textAlign = 'center';
+  const ground = CY + S * 1.08;
+  for (let i = memFlakes.length - 1; i >= 0; i--) {
+    const f = memFlakes[i];
+    f.life += 1 / 60; f.y += f.vy;
+    const x = cl(f.x + Math.sin(f.life * 0.9 + f.ph) * 16, 110, W - 110); f.sx = x;
+    if (f.y > ground) { landed++; burst(x, ground, '235,248,255', 10, 0.5); memFlakes.splice(i, 1); continue; }
+    const a = cl(Math.min(f.life / 1.2, (ground - f.y) / 60), 0, 1);
+    ctx.globalAlpha = a; ctx.globalCompositeOperation = 'lighter';
+    ctx.drawImage(sprite(f.mine ? '255,236,190' : '225,240,255'), x - 14, f.y - 32, 28, 28);
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = '#fff'; ctx.font = '16px serif'; ctx.fillText('❄', x, f.y - 12);
+    ctx.font = `300 ${W < 600 ? 12 : 14}px 'Noto Serif TC', serif`;
+    ctx.fillStyle = '#f4faff'; ctx.shadowColor = `rgba(${PAL.accent},.9)`; ctx.shadowBlur = 8;
+    ctx.fillText(f.t, x, f.y + 6); ctx.shadowBlur = 0;
+  }
+  ctx.globalAlpha = 1;
+}
+function drawSnowPile() {               // 回顧越多，樹下的雪堆越厚
+  if (w.tree < 0.05) return;
+  const n = memPool.length + landed * 0.2;
+  if (n <= 0) return;
+  const h = S * 0.12 * Math.min(1, Math.log2(n + 1) / 6), y = CY + S * 1.1;
+  ctx.save(); ctx.globalAlpha = w.tree * 0.9;
+  const g = ctx.createRadialGradient(CX, y, 0, CX, y, S * 1.3);
+  g.addColorStop(0, 'rgba(235,245,255,.55)'); g.addColorStop(0.7, 'rgba(200,225,250,.25)'); g.addColorStop(1, 'rgba(200,225,250,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(CX, y, S * 1.3, S * 0.14 + h, 0, 0, 7); ctx.fill();
+  ctx.restore();
+}
+
+// =====================================================================
+// 🔍 點一下樹上的吊飾或雪人，放大來看
+// =====================================================================
+panel('viewer', `
+  <div id="vwBody"></div>
+  <div class="btns"><button class="ghost" id="vwDel">移除</button><button class="main" id="vwClose">好</button></div>
+`);
+let vwTarget = null, vwRaf = 0;
+$('vwClose').addEventListener('click', () => close('viewer'));
+function adminOr(mine, path, label, mineFn) {     // 自己的 → 一般移除；管理員看別人的 → 管理員移除
+  const btn = $('vwDel');
+  if (mine) { btn.style.display = ''; confirmBtn(btn, label, mineFn); return; }
+  if (window.xmasIsAdmin && window.xmasIsAdmin() && path) {
+    btn.style.display = '';
+    confirmBtn(btn, '🛡 管理員移除', async () => { close('viewer'); try { await window.xmasAdminDelete(path); toast('已移除', 1800); } catch (e) { toast('移除失敗', 2000); } });
+    return;
+  }
+  btn.style.display = 'none';
+}
+function confirmBtn(btn, label, fn) {          // 按兩下才真的移除，避免手滑
+  btn.textContent = label;
+  btn.onclick = () => {
+    if (btn.dataset.armed) { delete btn.dataset.armed; fn(); return; }
+    btn.dataset.armed = '1'; btn.textContent = '再按一次確定移除';
+    setTimeout(() => { if (btn.dataset.armed) { delete btn.dataset.armed; btn.textContent = label; } }, 3000);
+  };
+}
+function viewDeco(d) {
+  cancelAnimationFrame(vwRaf);
+  $('vwBody').innerHTML = `<div class="t1" style="font-size:34px">${d.kind === 'photo' ? 'Photo' : 'Ornament'}</div>
+    <div class="t2">${d.mine ? '這是你掛上去的' + (d.kind === 'photo' ? '照片' : '吊飾') : '有人掛上去的' + (d.kind === 'photo' ? '照片' : '手繪吊飾')}</div>
+    <img src="${d.img}" alt="" style="width:min(64vw,260px);height:min(64vw,260px);border-radius:50%;display:block;margin:0 auto;box-shadow:0 0 40px rgba(var(--accent),.6),0 0 0 3px rgba(var(--accent2),.7)">`;
+  adminOr(d.mine, d.owner && !d.local ? 'decos/' + d.owner : null, '從樹上拿下來', async () => { close('viewer'); await removeDeco(d); });
+  open('viewer');
+}
+function viewSnowman(s) {
+  $('vwBody').innerHTML = `<div class="t1" style="font-size:34px">${esc(s.name || 'Snowman')}</div>
+    <div class="t2">${s.id === uid || s.id === 'me-local' ? '這是你堆的雪人' : '有人堆的雪人'}</div>
+    <canvas id="vwCv" width="520" height="600" style="width:240px;height:277px;display:block;margin:0 auto;border-radius:16px;background:linear-gradient(180deg,rgba(10,30,60,.5),rgba(200,225,250,.15))"></canvas>`;
+  const mine = s.id === uid || s.id === 'me-local';
+  adminOr(mine, s.id && s.id !== 'me-local' ? 'snowmen/' + s.id : null, '把雪人收起來', async () => { close('viewer'); await removeSnowman(); });
+  open('viewer');
+  const c = $('vwCv').getContext('2d');
+  const tick = () => {
+    if ($('viewer').classList.contains('hide') || !$('vwCv')) return;
+    const t = performance.now() / 1000;
+    c.clearRect(0, 0, 520, 600);
+    c.fillStyle = 'rgba(235,245,255,.9)'; c.beginPath(); c.ellipse(260, 560, 220, 26, 0, 0, 7); c.fill();
+    for (let i = 0; i < 40; i++) { c.fillStyle = 'rgba(255,255,255,.5)'; c.beginPath(); c.arc((i * 97 + t * 20 * (i % 3 + 1)) % 520, (i * 53 + t * 30 * (i % 4 + 1)) % 540, 2, 0, 7); c.fill(); }
+    const r = s.cfg.r, total = r[0] * 2 + (r[0] + r[1]) * 0.8 + (r[1] + r[2]) * 0.8 + r[2] * 1.9;
+    drawSnowman(c, 260, 555, Math.min(2.6, 500 / total), s.cfg, t);
+    vwRaf = requestAnimationFrame(tick);
+  };
+  tick();
+}
+
+function viewText(kind, item) {
+  cancelAnimationFrame(vwRaf);
+  const mine = item.owner === uid || item.owner === 'local';
+  const isMem = kind === 'memory';
+  $('vwBody').innerHTML = `<div class="t1" style="font-size:34px">${isMem ? 'This Year' : 'Blessing'}</div>
+    <div class="t2">${mine ? (isMem ? '這是你寫的年度回顧' : '這是你留的祝福') : (isMem ? '有人今年最開心的事' : '有人留下的祝福')}</div>
+    <div style="font-family:'Noto Serif TC',serif;font-size:22px;line-height:1.7;letter-spacing:.1em;color:#fff;padding:22px 10px;text-shadow:0 0 16px rgba(var(--accent),.8)">${isMem ? '❄' : '☁'}<br>${esc(item.t || item.text || '')}</div>`;
+  adminOr(mine && item.at, item.owner && item.owner !== 'local' ? (isMem ? 'memories/' : 'blessings/') + item.owner : null, '移除', async () => {
+    close('viewer');
+    if (isMem) { await removeMemory(item.at); for (let i = memFlakes.length - 1; i >= 0; i--) if (memFlakes[i].at === item.at) memFlakes.splice(i, 1); }
+    else { await removeBlessing(item.at); for (let i = lanterns.length - 1; i >= 0; i--) if (lanterns[i].at === item.at) lanterns.splice(i, 1); }
+    toast('移除了', 1800);
+  });
+  open('viewer');
+}
+
+// ---------- 移除自己的東西 ----------
+async function removeDeco(d) {
+  if (d.local) { const i = localDecos.indexOf(d); if (i >= 0) localDecos.splice(i, 1); toast('吊飾拿下來了', 2000); return; }
+  if (!ready()) return;
+  try {
+    const cur = await db.doc('decos/' + uid).get();
+    const list = cur.exists && Array.isArray(cur.data().list) ? cur.data().list : [];
+    const next = list.filter(x => x && Number(x.at) !== d.at);
+    if (next.length) await db.doc('decos/' + uid).set({ list: next }); else await db.doc('decos/' + uid).delete();
+    toast('吊飾從樹上拿下來了', 2000);
+  } catch (e) { console.log(e); toast('沒有移除成功，等一下再試', 2500); }
+}
+async function removeSnowman() {
+  snowmen = snowmen.filter(s => s.id !== 'me-local');
+  if (ready()) { try { await db.doc('snowmen/' + uid).delete(); } catch (e) { console.log(e); toast('沒有移除成功，等一下再試', 2500); return; } }
+  toast('☃ 雪人收起來了', 2000);
+}
+async function removeMemory(at) {
+  myMem = myMem.filter(m => m.at !== at);
+  memPool = memPool.filter(m => m.at !== at);
+  try { if (myMem.length) await db.doc('memories/' + uid).set({ list: myMem }); else await db.doc('memories/' + uid).delete(); } catch (e) { console.log(e); }
+}
+async function removeBlessing(at) {
+  myBless = myBless.filter(b => b.at !== at);
+  try { if (myBless.length) await db.doc('blessings/' + uid).set({ list: myBless }); else await db.doc('blessings/' + uid).delete(); } catch (e) { console.log(e); }
+  blessPool = blessPool.filter(b => b.at !== at);
+}
+
+// ---------- 我放上去的東西 ----------
+panel('mine', `
+  <div class="t1" style="font-size:34px">My Things</div>
+  <div class="t2">你放到這棵樹上的東西，想留就留，想收就收</div>
+  <div id="mineBody"></div>
+  <div class="btns"><button class="ghost" id="mineClose">關閉</button></div>
+`);
+$('mineClose').addEventListener('click', () => close('mine'));
+const mineCss = document.createElement('style');
+mineCss.textContent = `
+  .msec { text-align: left; margin-top: 14px; }
+  .msec .glabel { margin-bottom: 8px; }
+  .mrow { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; background: rgba(5,15,30,.35); margin-top: 6px;
+    font-family: 'Noto Serif TC', serif; font-size: 13px; color: #eaf5ff; letter-spacing: .05em; }
+  .mrow img, .mrow canvas { width: 44px; height: 44px; border-radius: 50%; flex: none; cursor: pointer; }
+  .mrow .txt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .mrow button { flex: none; border-radius: 999px; padding: 6px 12px; cursor: pointer; font-family: 'Noto Serif TC', serif; font-size: 12px;
+    background: transparent; color: #ffc3d0; border: 1px solid rgba(255,170,190,.45); }
+  .mempty { font-family: 'Noto Serif TC', serif; font-size: 12px; color: rgba(210,230,245,.45); padding: 4px 2px; }
+`;
+document.head.appendChild(mineCss);
+function row(inner, label, onDel, onView) {
+  const d = document.createElement('div'); d.className = 'mrow'; d.innerHTML = inner;
+  const b = document.createElement('button'); d.appendChild(b);
+  confirmBtn(b, label, async () => { d.style.opacity = .4; await onDel(); setTimeout(() => { d.remove(); }, 300); });
+  if (onView) d.querySelectorAll('img,canvas').forEach(x => x.addEventListener('click', onView));
+  return d;
+}
+function section(title, rows, empty) {
+  const s = document.createElement('div'); s.className = 'msec';
+  s.innerHTML = `<div class="glabel">${title}</div>`;
+  if (rows.length) rows.forEach(r => s.appendChild(r)); else s.insertAdjacentHTML('beforeend', `<div class="mempty">${empty}</div>`);
+  return s;
+}
+function renderMine() {
+  const body = $('mineBody'); body.innerHTML = '';
+  if (!ready() && !localDecos.length) { body.innerHTML = '<div class="note">登入後才能管理你放上去的東西</div>'; return; }
+  const myDecos = [...decoList.filter(d => d.mine), ...localDecos];
+  body.appendChild(section('🖼 照片和吊飾', myDecos.map(d => row(`<img src="${d.img}" alt=""><div class="txt">${d.kind === 'photo' ? '照片吊飾' : '手繪吊飾'}</div>`, '拿下來', () => removeDeco(d), () => { close('mine'); viewDeco(d); })), '還沒有掛吊飾'));
+  const mySm = snowmen.find(s => s.id === uid || s.id === 'me-local');
+  const smRows = [];
+  if (mySm) {
+    const r = row(`<canvas width="88" height="88"></canvas><div class="txt">☃ ${esc(mySm.name || '你的雪人')}</div>`, '收起來', removeSnowman, () => { close('mine'); viewSnowman(mySm); });
+    const c = r.querySelector('canvas').getContext('2d');
+    c.fillStyle = 'rgba(20,45,80,.8)'; c.beginPath(); c.arc(44, 44, 44, 0, 7); c.fill();
+    const rr = mySm.cfg.r, total = rr[0] * 2 + (rr[0] + rr[1]) * 0.8 + (rr[1] + rr[2]) * 0.8 + rr[2] * 1.9;
+    drawSnowman(c, 44, 82, 74 / total, mySm.cfg, 0);
+    smRows.push(r);
+  }
+  body.appendChild(section('☃ 雪人', smRows, '還沒有堆雪人'));
+  body.appendChild(section('❄ 年度回顧', myMem.map(m => row(`<div class="txt">❄ ${esc(m.t)}</div>`, '移除', () => removeMemory(m.at))), '還沒有寫年度回顧'));
+  body.appendChild(section('☁ 祝福', (typeof myBless !== 'undefined' ? myBless : []).map(b => row(`<div class="txt">☁ ${esc(b.t)}</div>`, '移除', () => removeBlessing(b.at))), '還沒有留祝福'));
+}
+async function loadMyWishes() {
+  if (!ready()) return [];
+  try {
+    const snap = await db.collection('data/users/' + uid).get();
+    return snap.docs.map(d => ({ id: d.id, ...(d.data() || {}) })).filter(d => typeof d.text === 'string').sort((a, b) => (b.at || 0) - (a.at || 0));
+  } catch (e) { return []; }
+}
+async function removeWish(wd) {
+  try {
+    await db.doc('data/users/' + uid + '/' + wd.id).delete();
+    if (myDoc && myDoc.n > 0) {                       // 樹上少亮一顆
+      myDoc = { n: myDoc.n - 1, ts: myDoc.ts.slice(0, -1) };
+      if (myDoc.n > 0) await db.doc('wishes/' + uid).set(myDoc); else await db.doc('wishes/' + uid).delete();
+      litShown = Math.max(0, litShown - 1);
+    }
+  } catch (e) { console.log(e); toast('沒有移除成功，等一下再試', 2500); }
+}
+function openMine() {
+  renderMine(); open('mine');
+  loadMyWishes().then(list => {
+    const sec = section('✦ 我的願望（只有你看得到）', list.map(wd => row(`<div class="txt">✦ ${esc(wd.text)}</div>`, '移除', () => removeWish(wd))), '你許的願都沒有寫字，或還沒許願');
+    const body = $('mineBody'); if (body.firstChild) body.insertBefore(sec, body.firstChild); else body.appendChild(sec);
+  });
+}
+
+// =====================================================================
+// 接上主畫面
+// =====================================================================
+window.extraTap = (x, y) => {
+  if (hitBell(x, y)) { ring(true); return true; }
+  const tw = t => Math.max(40, String(t).length * (W < 600 ? 7 : 8));
+  for (const f of memFlakes) if (Math.abs(x - f.sx) < tw(f.t) && y > f.y - 34 && y < f.y + 14) { viewText('memory', f); return true; }
+  for (const l of lanterns) if (Math.abs(x - l.sx) < tw(l.text) && y > l.y - 34 && y < l.y + 12) { viewText('blessing', { ...l, t: l.text }); return true; }
+  if (w.tree > 0.5) {
+    for (let i = decoHits.length - 1; i >= 0; i--) { const h = decoHits[i]; if (Math.hypot(h.x - x, h.y - y) < h.r + 6) { viewDeco(h.d); return true; } }
+    for (let i = smHits.length - 1; i >= 0; i--) { const h = smHits[i]; if (Math.abs(x - h.x) < h.hw && y > h.y0 && y < h.y1) { viewSnowman(h.s); return true; } }
+  }
+  return false;
+};
+window.drawBehind = (now, time) => { drawSnowPile(); };
+resize();
+window.drawExtras = (now, time) => {
+  drawDecos(time);
+  drawSnowmen(time);
+  drawBell(time);
+  drawMemFlakes();
+  drawFlakes();
+  updateCatch(now);
+};
+})();
+
+</script>
+<script>
+/* =====================================================================
+   ✋ 手勢控制（用鏡頭）
+   ✊ 握拳：聖誕樹　🫰 手指愛心：愛心　✌️ 比耶：星星　🖐 張開手：童話
+   手左右移動：轉動聖誕樹
+   ===================================================================== */
+(() => {
+const css = document.createElement('style');
+css.textContent = `
+  #gestBtn { position: fixed; right: 12px; top: 78px; z-index: 6; width: 36px; height: 36px; padding: 0; opacity: 0; transition: opacity 1.5s; pointer-events: none; font-size: 16px; }
+  #gestBtn.on { opacity: 1; pointer-events: auto; }
+  #gestBtn.active { box-shadow: 0 0 16px rgba(var(--accent), .8); border-color: rgba(var(--accent2), .9); }
+  #gestCam { position: fixed; right: 12px; top: 122px; width: 96px; border-radius: 10px; transform: scaleX(-1); z-index: 5;
+    opacity: 0; transition: opacity .8s; border: 1px solid rgba(255,255,255,.2); pointer-events: none; }
+  #gestCam.on { opacity: .45; }
+  #gestTag { position: fixed; right: 12px; top: 122px; width: 96px; text-align: center; z-index: 6; pointer-events: none;
+    font-family: 'Noto Serif TC', serif; font-size: 20px; transform: translateY(78px); opacity: 0; transition: opacity .3s; }
+`;
+document.head.appendChild(css);
+
+const btn = document.createElement('button'); btn.className = 'pill'; btn.id = 'gestBtn'; btn.title = '手勢'; btn.textContent = '✋';
+const video = document.createElement('video'); video.id = 'gestCam'; video.playsInline = true; video.muted = true;
+const tag = document.createElement('div'); tag.id = 'gestTag';
+document.body.append(btn, video, tag);
+
+// 跟音樂按鈕一起出現
+setInterval(() => { const m = document.getElementById('music'); btn.classList.toggle('on', !!(m && m.classList.contains('on'))); }, 500);
+
+let landmarker = null, stream = null, active = false, lastTime = -1, votes = [], raf = 0;
+const EMOJI = { tree: '✊', heart: '🫰', star: '✌️', dream: '🖐' };
+
+btn.addEventListener('click', async () => {
+  if (active) { stop(); return; }
+  btn.textContent = '…';
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 } });
+    video.srcObject = stream; await video.play();
+    if (!landmarker) {
+      const { FilesetResolver, HandLandmarker } = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs');
+      const fileset = await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
+      landmarker = await HandLandmarker.createFromOptions(fileset, {
+        baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task', delegate: 'GPU' },
+        runningMode: 'VIDEO', numHands: 1
+      });
+    }
+    active = true; btn.textContent = '✋'; btn.classList.add('active'); video.classList.add('on');
+    toast('手勢開啟了 ✋<br><span style="font-size:12px;opacity:.8">✊ 握拳：聖誕樹　🫰 手指愛心：愛心<br>✌️ 比耶：星星　🖐 張開手：童話<br>手左右移動可以轉動樹</span>', 6000);
+    loop();
+  } catch (e) {
+    console.log(e); stop();
+    toast('沒辦法打開鏡頭<br><span style="font-size:12px;opacity:.8">請確認瀏覽器允許使用相機</span>', 3500);
+  }
+});
+
+function stop() {
+  active = false; cancelAnimationFrame(raf);
+  if (stream) stream.getTracks().forEach(t => t.stop()); stream = null;
+  btn.textContent = '✋'; btn.classList.remove('active'); video.classList.remove('on'); tag.style.opacity = 0;
+  window.gestureSpin = undefined; votes = [];
+}
+
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+function classify(lm) {
+  const wrist = lm[0], hand = dist(wrist, lm[9]) || 1e-6;            // 手掌大小，讓判斷不受遠近影響
+  const ext = [[8, 6], [12, 10], [16, 14], [20, 18]].map(([tip, pip]) => dist(lm[tip], wrist) > dist(lm[pip], wrist) * 1.15);
+  const n = ext.filter(Boolean).length;
+  const othersFolded = !ext[1] && !ext[2] && !ext[3];
+  // 🫰 手指愛心：中指、無名指、小指收起；拇指和食指指尖靠在一起，而且食指沒有縮進掌心
+  const pinch = dist(lm[4], lm[8]) / hand;
+  const indexOut = dist(lm[8], wrist) > dist(lm[5], wrist) * 1.1;
+  const thumbOut = dist(lm[4], wrist) > dist(lm[3], wrist);
+  if (othersFolded && pinch < 0.45 && indexOut && thumbOut) return 'heart';
+  if (n >= 4) return 'dream';                                          // 🖐
+  if (ext[0] && ext[1] && !ext[2] && !ext[3]) return 'star';           // ✌️
+  if (n === 0) return 'tree';                                          // ✊
+  return null;
+}
+
+function loop() {
+  if (!active) return;
+  raf = requestAnimationFrame(loop);
+  if (!landmarker || video.readyState < 2 || video.currentTime === lastTime) return;
+  lastTime = video.currentTime;
+  let res;
+  try { res = landmarker.detectForVideo(video, performance.now()); } catch (e) { return; }
+  if (res && res.landmarks && res.landmarks.length) {
+    const lm = res.landmarks[0];
+    const g = classify(lm);
+    votes.push(g); if (votes.length > 6) votes.shift();
+    const ok = typeof started !== 'undefined' && started && starLit && !(window.__catching);
+    if (g && ok && votes.length >= 5 && votes.every(v => v === g) && mode !== g) {
+      setMode(g); burst(innerWidth / 2, innerHeight * 0.4, PAL.accent2, 30, 1);
+    }
+    tag.textContent = g ? EMOJI[g] : '';
+    tag.style.opacity = g ? 1 : 0.3;
+    window.gestureSpin = ok ? (lm[9].x - 0.5) * 0.05 : undefined;
+  } else {
+    votes = []; window.gestureSpin = undefined; tag.style.opacity = 0;
+  }
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden && active) stop(); });
+})();
+
+</script>
+</body>
+</html>
